@@ -49,6 +49,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { FooterComponent } from './footer/footer.component';
 import { SideBarComponent } from './side-bar/side-bar.component';
+import { MainPageComponent } from './main-page/main-page.component';
+import { TestPageComponent } from './test-page/test-page.component';
 
 @NgModule({
   declarations: [
@@ -56,6 +58,8 @@ import { SideBarComponent } from './side-bar/side-bar.component';
     NavBarComponent,
     FooterComponent,
     SideBarComponent,
+    MainPageComponent,
+    TestPageComponent,
   ],
 
   imports: [
