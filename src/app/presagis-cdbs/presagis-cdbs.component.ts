@@ -6,54 +6,56 @@ import { CDBsService } from '../cdbs.service';
 import { Component, OnInit } from '@angular/core';
 
 
-declare var Cesium:any;
+declare var Cesium: any;
 @Component({
+    // tslint:disable-next-line: component-selector
     selector: 'cdbs', // <cdbs>
     templateUrl: './presagis-cdbs.component.html'
 })
 
-export class PresagisCDBsComponent extends AppComponent implements OnInit{
+export class PresagisCDBsComponent extends AppComponent implements OnInit {
 
-    title = "PRESAGIS CDBs";
+    title = 'PRESAGIS CDBs';
     selectedCDB: CDB;
 
-    constructor(service: CDBsService,http: HttpClient){
-        super(http,service);
+    constructor(service: CDBsService, http: HttpClient) {
+        super(http, service);
 
     }
 
     ngOnInit() {
 
-        this.viewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder:false});
-        
+        this.viewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder: false});
+
       }
 
-    onSelect(cdb:CDB):void{
+    onSelect(cdb: CDB): void {
 
-        this.selectedCDB = new CDB(cdb["name"],cdb["id"],cdb["coordinate"]);
+        this.selectedCDB = new CDB(cdb['name'], cdb['id'], cdb['coordinate']);
 
-        
+
         this.viewer.camera.flyTo({
-            destination : Cesium.Cartesian3.fromDegrees(this.selectedCDB.coordinate.x,this.selectedCDB.coordinate.y, this.selectedCDB.coordinate.z)
+            // tslint:disable-next-line: max-line-length
+            destination : Cesium.Cartesian3.fromDegrees(this.selectedCDB.coordinate.x, this.selectedCDB.coordinate.y, this.selectedCDB.coordinate.z)
             });
 
 
-        this.http.get(this.extentsUrl + this.selectedCDB.name.toLowerCase() + ".json").toPromise().then(data => {
-            
+        this.http.get(this.extentsUrl + this.selectedCDB.name.toLowerCase() + '.json').toPromise().then(data => {
+
             this.selectedCDB.cdbDetails = data;
 
-        })
-        
-        
+        });
+
+
         // this.http.get(this.extentsUrl + this.selectedCDB.name.toLowerCase() + ".json").toPromise().then(data => {
 
 
             // Cesium.Math.setRandomNumberSeed(3);
 
             // data["features"].forEach(element => {
-                
+
             //     var datasourse = Cesium.GeoJsonDataSource.load(element,{
-                                    
+
             //         stroke: Cesium.Color.fromRandom({
             //             alpha: 1.0
             //         }),
@@ -66,9 +68,9 @@ export class PresagisCDBsComponent extends AppComponent implements OnInit{
             //         })
 
             //     });
-            
-        
-            //     this.viewer.dataSources.add(datasourse);    
+
+
+            //     this.viewer.dataSources.add(datasourse);
 
             // });
 

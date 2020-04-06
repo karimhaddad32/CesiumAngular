@@ -1,23 +1,23 @@
-export class CDB{
-    
-    constructor(private _name:string, private _id:number,private _coordinate: {x:number, y:number,z:number} ){}
+export class CDB {
 
-    get name(){
+    constructor(private _name: string, private _id: number, private _coordinate: {x: number, y: number, z: number} ) {}
+
+    get name() {
         return this._name;
     }
 
-    get coordinate(){
+    get coordinate() {
         return this._coordinate;
     }
 
-    get id(){
+    get id() {
         return this._id;
     }
 
-    set cdbDetails(value){
+    set cdbDetails(value) {
     }
 
-    get cdbDetails(){
+    get cdbDetails() {
         return this.cdbDetails;
     }
 
