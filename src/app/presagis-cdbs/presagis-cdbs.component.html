@@ -1,0 +1,23 @@
+
+<h3 class="mat-h3" id="title">{{ title }}</h3>
+<mat-accordion>
+    <mat-expansion-panel *ngFor="let cdb of cdbs" (click)="onSelect(cdb)">
+        <mat-expansion-panel-header>
+            <mat-panel-title>
+                {{cdb.name}}
+            </mat-panel-title>
+        </mat-expansion-panel-header>
+    
+        <mat-expansion-panel>
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+    
+            <mat-checkbox>Disable select</mat-checkbox>
+    
+        </mat-expansion-panel>
+    </mat-expansion-panel>
+
+  </mat-accordion>
