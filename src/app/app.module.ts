@@ -1,3 +1,8 @@
+import { FooterComponent } from './footer/footer.component';
+import { TestPageComponent } from './test-page/test-page.component';
+import { SideBarComponent } from './side-bar/side-bar.component';
+import { MainPageComponent } from './main-page/main-page.component';
+import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { CDBsService } from './cdbs.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
@@ -23,7 +28,13 @@ import {
   declarations: [
     AppComponent,
     CesiumComponent,
-    PresagisCDBsComponent
+    PresagisCDBsComponent,
+     // Testing
+    NavBarComponent,
+    MainPageComponent,
+    SideBarComponent,
+    TestPageComponent,
+    FooterComponent
   ],
 
   imports: [
