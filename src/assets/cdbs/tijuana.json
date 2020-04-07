@@ -1,4 +1,8 @@
 {
+    "id": 1,
+    "name": "Tijuana",
+    "totalFeatureCount": "something",
+    "coordinate": {"x": -117.0382, "y": 32.5149, "z": 50000},
     "type": "FeatureCollection",
     "features": [
         {

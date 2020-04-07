@@ -1,0 +1,18 @@
+<div>
+  <h2>{{extent.name}}</h2>
+  <ul *ngFor="let feature of extent.features">
+    <li>
+      <input type="checkbox" > 
+      {{feature.properties.Lod_Level}}
+    </li>
+    <li>
+      {{feature.properties.data_set}}
+    </li>
+    <li>
+      {{feature.properties.component}}
+    </li>
+    <li>
+      {{feature.properties.component_key}}
+    </li>
+  </ul>
+</div>

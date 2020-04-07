@@ -1,1 +1,24 @@
-<p>main-page works!</p>
+<div class="cdb-list">
+    <div *ngFor="let extent of extents">
+        <div class="card" style="background-image: url('someUrl'); background-repeat: no-repeat;">
+            <div class="card-title">
+                <h3>
+                    {{extent.name}}
+                </h3>
+            </div>
+            <div>
+                <div class="extent-info">
+                    <p>
+                        Id:             {{extent.id}} <br /> 
+                        Location:       E{{extent.coordinate.x}}, N{{extent.coordinate.y}} <br />
+                        Feature Count:  {{extent.totalFeatureCount}}
+                    </p>
+                </div>
+                <p [innerHtml]='extent.type'>Test</p>
+                <a routerLink='/{{extent.name}}' class="open-cesium">Open in Cesium</a>
+                
+            </div>
+
+        </div>
+    </div>
+</div>
