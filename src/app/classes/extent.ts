@@ -5,11 +5,13 @@ export class Extent {
     type: string;
     totalFeatureCount: number;
     features: Feature[];
+
+    constructor(){}
 }
 
 export class Geometry {
     type: string;
-    coordinates: any[][][];
+    coordinates: any[];
 }
 
 export class Properties {
@@ -22,7 +24,7 @@ export class Properties {
     component_key: string;
     // tslint:disable-next-line: variable-name
     features_count: number;
-    features: any[];
+    features: Feature[];
 }
 
 export class Feature {

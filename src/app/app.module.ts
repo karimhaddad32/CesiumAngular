@@ -3,7 +3,6 @@ import { TestPageComponent } from './test-page/test-page.component';
 import { SideBarComponent } from './side-bar/side-bar.component';
 import { MainPageComponent } from './main-page/main-page.component';
 import { NavBarComponent } from './nav-bar/nav-bar.component';
-import { CDBsService } from './cdbs.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
@@ -50,9 +49,7 @@ import { MatCheckboxModule,
       MatButtonModule,
       MatDividerModule
    ],
-   providers: [
-      CDBsService
-   ],
+   providers: [MainPageComponent],
    bootstrap: [
       AppComponent
    ]

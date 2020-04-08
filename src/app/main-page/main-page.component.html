@@ -9,16 +9,13 @@
             <div>
                 <div class="extent-info">
                     <p>
-                        Id:             {{extent.id}} <br /> 
-                        Location:       E{{extent.coordinate.x}}, N{{extent.coordinate.y}} <br />
-                        Feature Count:  {{extent.totalFeatureCount}}
+                        Location:<br />{{extent.coordinate.y}},{{extent.coordinate.x}}
                     </p>
                 </div>
                 <p [innerHtml]='extent.type'>Test</p>
-                <a routerLink='/{{extent.name}}' class="open-cesium">Open in Cesium</a>
-                
+                <a routerLink='/{{extent.name}}' class="open-cesium" (click)= "getDatasets(extent)">Examin</a>
             </div>
-
         </div>
     </div>
 </div>
+

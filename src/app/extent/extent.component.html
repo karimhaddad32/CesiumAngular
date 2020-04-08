@@ -1,18 +1,15 @@
-<div>
-  <h2>{{extent.name}}</h2>
-  <ul *ngFor="let feature of extent.features">
-    <li>
-      <input type="checkbox" > 
-      {{feature.properties.Lod_Level}}
-    </li>
-    <li>
-      {{feature.properties.data_set}}
-    </li>
-    <li>
-      {{feature.properties.component}}
-    </li>
-    <li>
-      {{feature.properties.component_key}}
-    </li>
-  </ul>
+
+<div style="display: grid; grid-template-columns: 30% auto;">
+  <div>
+    <h2>{{cdbName}}</h2>
+    <div *ngFor="let dataset of datasets">
+      <h3>{{dataset.name}}</h3>
+      <div *ngFor="let component of dataset.components"> 
+        <h4>{{component.name}}</h4>
+        <div>{{component.key}}</div>
+        <div>{{component.lodLevel}}</div>
+      </div>
+    </div>
+  </div>
+  
 </div>

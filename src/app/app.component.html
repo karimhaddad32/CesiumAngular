@@ -5,9 +5,18 @@
   </cdbs>
 
   
-  <cesium></cesium>
+ 
 
 </div> -->
 <app-nav-bar></app-nav-bar>
-<router-outlet></router-outlet>
+<div style="display: grid; grid-template-columns: 35% auto;">
+  <div>
+    <router-outlet></router-outlet>
+  </div>
+  <div>
+    <cesium></cesium>
+  </div>
+
+</div>
+
 <app-footer></app-footer>

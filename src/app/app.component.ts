@@ -1,10 +1,9 @@
-import { CDB } from './cdb.component';
-import { CDBsService } from './cdbs.service';
+import { Dataset } from './classes/dataset';
+import { Extent } from './classes/extent';
+import { ExtentService } from './services/extent.service';
 import { Component, NgModule, OnInit, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import {BehaviorSubject, Observable, of as observableOf} from 'rxjs';
-import {NestedTreeControl} from '@angular/cdk/tree';
-import {MatTreeNestedDataSource} from '@angular/material/tree';
+import { Title } from '@angular/platform-browser';
+import { SharedService } from './services/shared.service';
 
 declare var Cesium: any;
 
@@ -14,16 +13,32 @@ declare var Cesium: any;
   styleUrls: ['./app.component.scss']
 })
 
-export class AppComponent  {
+export class AppComponent implements OnInit {
 
   protected cdbsUrl = '';
   protected extentsUrl = 'assets/cdbs/';
   protected viewer;
-  protected cdbs: any[];
 
-  constructor(public http: HttpClient, public service: CDBsService) {
-    this.cdbs = this.service.getCDBs(this.http, this.cdbsUrl);
+  public cesiumViewer;
+  public extents: Extent[];
+  public selectedExtent: Extent[];
+  public currentDatasets: Dataset[];
+
+  constructor(
+    private extentService: ExtentService,
+    private titleService: Title,
+    private sharedService: SharedService,
+    ) {
+      this.extents = [];
+      this.selectedExtent = new Extent();
+      this.currentDatasets = [];
   }
+
+  ngOnInit(): void {
+    this.cesiumViewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder: false});
+  }
+
+
 
 }
 

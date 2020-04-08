@@ -1,8 +1,8 @@
+import { Extent } from './../classes/extent';
+import { ExtentService } from './../services/extent.service';
 import { AppComponent } from './../app.component';
-import { CDB } from './../cdb.component';
 import { HttpClient } from '@angular/common/http';
 import { CesiumComponent } from '../cesium/cesium.component';
-import { CDBsService } from '../cdbs.service';
 import { Component, OnInit } from '@angular/core';
 
 
@@ -16,10 +16,10 @@ declare var Cesium: any;
 export class PresagisCDBsComponent extends AppComponent implements OnInit {
 
     title = 'PRESAGIS CDBs';
-    selectedCDB: CDB;
+    extent: Extent;
 
-    constructor(service: CDBsService, http: HttpClient) {
-        super(http, service);
+    constructor(service: ExtentService, http: HttpClient) {
+        super(service);
 
     }
 
@@ -29,22 +29,22 @@ export class PresagisCDBsComponent extends AppComponent implements OnInit {
 
       }
 
-    onSelect(cdb: CDB): void {
+    onSelect(name: string): void {
 
-        this.selectedCDB = new CDB(cdb['name'], cdb['id'], cdb['coordinate']);
-
-
-        this.viewer.camera.flyTo({
-            // tslint:disable-next-line: max-line-length
-            destination : Cesium.Cartesian3.fromDegrees(this.selectedCDB.coordinate.x, this.selectedCDB.coordinate.y, this.selectedCDB.coordinate.z)
-            });
+        // this.extent = this.service.getExtent(cdb);
 
 
-        this.http.get(this.extentsUrl + this.selectedCDB.name.toLowerCase() + '.json').toPromise().then(data => {
+        // this.viewer.camera.flyTo({
+        //     // tslint:disable-next-line: max-line-length
+        //     destination : Cesium.Cartesian3.fromDegrees(this.selectedCDB.coordinate.x, this.selectedCDB.coordinate.y, this.selectedCDB.coordinate.z)
+        //     });
 
-            this.selectedCDB.cdbDetails = data;
 
-        });
+        // this.http.get(this.extentsUrl + this.selectedCDB.name.toLowerCase() + '.json').toPromise().then(data => {
+
+        //     this.selectedCDB.cdbDetails = data;
+
+        // });
 
 
         // this.http.get(this.extentsUrl + this.selectedCDB.name.toLowerCase() + ".json").toPromise().then(data => {
@@ -94,7 +94,7 @@ export class PresagisCDBsComponent extends AppComponent implements OnInit {
 
         // })
 
-        console.log(this.selectedCDB.coordinate);
+        // console.log(this.selectedCDB.coordinate);
     }
 
 }
