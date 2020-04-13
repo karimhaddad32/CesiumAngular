@@ -48,10 +48,6 @@ export class MainPageComponent implements OnInit {
       );
     console.log(this.datasets);
 
-    this.viewer.camera.flyTo({
-        // tslint:disable-next-line: max-line-length
-        destination : Cesium.Cartesian3.fromDegrees(extent.coordinate.x, extent.coordinate.y, 500000)
-        });
   }
 
 }

@@ -13,19 +13,18 @@ declare var Cesium: any;
     templateUrl: './presagis-cdbs.component.html'
 })
 
-export class PresagisCDBsComponent extends AppComponent implements OnInit {
+export class PresagisCDBsComponent implements OnInit {
 
     title = 'PRESAGIS CDBs';
     extent: Extent;
 
-    constructor(service: ExtentService, http: HttpClient) {
-        super(service);
+    constructor(service: ExtentService) {
 
     }
 
     ngOnInit() {
 
-        this.viewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder: false});
+        // this.viewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder: false});
 
       }
 

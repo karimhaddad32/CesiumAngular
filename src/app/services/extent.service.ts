@@ -16,7 +16,7 @@ private _selectedExtent: Extent;
 private cdbDatasets: Dataset[];
 private _checkedComponents: CDBComponent[];
 
-constructor(private http: HttpClient){
+constructor(private http: HttpClient) {
 
   this._selectedExtent = new Extent();
   this.cdbDatasets = [];
@@ -55,8 +55,17 @@ serverUrl = '';
 // Returns the requested CDB details
   getDatasets(name: string): Observable<Dataset[]> {
     // Tempo
-    // const extents: Extent[] = EXTENTS.filter(a => a.name === name);
-    this.cdbDatasets = DATASETS;
+   
+    const extents: Extent[] = EXTENTS.filter(a => a.name === name);
+    console.log(extents);
+
+    if (extents.length > 0) {
+      this.cdbDatasets = DATASETS;
+      this.selectedExtent = EXTENTS.filter(a => a.name === name)[0];
+    } else {
+      this.cdbDatasets = undefined;
+      this.selectedExtent = null;
+    }
     return of(this.cdbDatasets);
     // Rest API call from the web server.
     return this.http.get<Dataset[]>(this.serverUrl + '/name');
@@ -66,19 +75,19 @@ serverUrl = '';
     return of(this.selectedExtent);
   }
 
-  get checkedComponents(): CDBComponent[]{
+  get checkedComponents(): CDBComponent[] {
     return this._checkedComponents;
   }
 
-  set checkedComponents(componentsList: CDBComponent[]){
+  set checkedComponents(componentsList: CDBComponent[]) {
     this.checkedComponents = componentsList;
   }
 
-  get selectedExtent(): Extent{
+  get selectedExtent(): Extent {
     return this._selectedExtent;
   }
 
-  set selectedExtent(extent: Extent){
+  set selectedExtent(extent: Extent) {
     this._selectedExtent = extent;
   }
 

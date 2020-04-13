@@ -1,3 +1,4 @@
+import { EXTENTS } from './../mock-extents';
 import { TreeChecklistComponent } from './../tree-checklist.component';
 import { AppComponent } from './../app.component';
 import { SharedService } from './../services/shared.service';
@@ -45,112 +46,10 @@ export class ChecklistDatabase {
   public currentExtent: Extent;
   public datasets: Dataset[];
   public datasetsTree: {};
-  public componentList: string[];
-
-  constructor(private service: ExtentService) {
-    this.datasetsTree = {};
-    this.componentList = [];
-    this.initialize();
-  }
-
-  initialize() {
-    // Build the tree nodes from Json object. The result is a list of `TodoItemNode` with nested
-    //     file node as children.
-
-    this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
-    this.service.getDatasets(this.currentExtent.name).subscribe(datasets => this.datasets = datasets);
-
-    // Making The Datasets Tree
-
-    this.datasets.forEach(element => {
-      element.components.forEach(comp => {
-        this.componentList.push(comp.name);
-      });
-      this.datasetsTree[element.name] = this.componentList;
-      this.componentList = [];
-    });
-
-    console.log(this.datasetsTree);
-    const data = this.buildFileTree({Extents: this.datasetsTree}, 0);
-
-    // Notify the change.
-    this.dataChange.next(data);
-  }
-
-  /**
-   * Build the file structure tree. The `value` is the Json object, or a sub-tree of a Json object.
-   * The return value is the list of `TodoItemNode`.
-   */
-  buildFileTree(obj: {[key: string]: any}, level: number): TodoItemNode[] {
-    return Object.keys(obj).reduce<TodoItemNode[]>((accumulator, key) => {
-      const value = obj[key];
-      const node = new TodoItemNode();
-      node.item = key;
-
-      if (value != null) {
-        if (typeof value === 'object') {
-          node.children = this.buildFileTree(value, level + 1);
-        } else {
-          node.item = value;
-        }
-      }
-
-      return accumulator.concat(node);
-    }, []);
-  }
-
-  /** Add an item to to-do list */
-  insertItem(parent: TodoItemNode, name: string) {
-    if (parent.children) {
-      parent.children.push({item: name} as TodoItemNode);
-      this.dataChange.next(this.data);
-    }
-  }
-
-  updateItem(node: TodoItemNode, name: string) {
-    node.item = name;
-    this.dataChange.next(this.data);
-  }
-}
-
-/**
- * @title Tree with checkboxes
- */
-
-
-@Component({
-  selector: 'app-extent',
-  templateUrl: './extent.component.html',
-  styleUrls: ['./extent.component.css'],
-  providers: [ChecklistDatabase]
-})
-
-export class ExtentComponent implements OnInit {
-
-  /** Map from flat node to nested node. This helps us finding the nested node to be modified */
-  flatNodeMap = new Map<TodoItemFlatNode, TodoItemNode>();
-
-  /** Map from nested node to flattened node. This helps us to keep the same object for selection */
-  nestedNodeMap = new Map<TodoItemNode, TodoItemFlatNode>();
-
-  /** A selected parent node to be inserted */
-  selectedParent: TodoItemFlatNode | null = null;
-
-  /** The new item's name */
-  newItemName = '';
-
-  treeControl: FlatTreeControl<TodoItemFlatNode>;
-
-  treeFlattener: MatTreeFlattener<TodoItemNode, TodoItemFlatNode>;
-
-  dataSource: MatTreeFlatDataSource<TodoItemNode, TodoItemFlatNode>;
-
-  /** The selection for checklist */
-  checklistSelection = new SelectionModel<TodoItemFlatNode>(true /* multiple */);
-
-  // Presagis
-  datasets: Dataset[] = [];
+  public componentList: any[];
+  public lodList: string[];
   cdbName: string;
+  viewer: any;
 
   // ActivatedRoute to get the extension in the URL
   // ExtentService to get the data of the provided extension
@@ -158,50 +57,63 @@ export class ExtentComponent implements OnInit {
   // SharedService is for the page titles
   // Title is to access the page title.
   // Meta is to change the meta tags of the website.
-  viewer: any;
   constructor(
+    private service: ExtentService,
     private route: ActivatedRoute,
     private extentService: ExtentService,
     private router: Router,
     private titleService: Title,
     private sharedService: SharedService,
     private meta: Meta,
-    private app: AppComponent,
-    private _database: ChecklistDatabase
-    )
-    {
-      this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel,
-      this.isExpandable, this.getChildren);
-      this.treeControl = new FlatTreeControl<TodoItemFlatNode>(this.getLevel, this.isExpandable);
-      this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
-      _database.dataChange.subscribe(data => {
-        this.dataSource.data = data;
-      });
-    }
+    private app: AppComponent) {
 
-    getLevel = (node: TodoItemFlatNode) => node.level;
+    this.datasetsTree = {};
+    this.componentList = [];
+    this.lodList = [];
+    this.initialize();
 
-    isExpandable = (node: TodoItemFlatNode) => node.expandable;
+  }
 
-    getChildren = (node: TodoItemNode): TodoItemNode[] => node.children;
-
-    hasChild = (_: number, _nodeData: TodoItemFlatNode) => _nodeData.expandable;
-
-    hasNoContent = (_: number, _nodeData: TodoItemFlatNode) => _nodeData.item === '';
-    
-    ngOnInit() {
+  initialize() {
 
     this.viewer = this.app.cesiumViewer;
+
+
     this.route.params.subscribe(params => {
-      this.cdbName = params.name;
-      this.extentService.getDatasets(name)
+      this.extentService.getDatasets(params.name)
       .subscribe(datasets => {
         if (datasets === undefined) {
           this.router.navigateByUrl('404');
           return;
         }
+
+        this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
+        console.log(this.currentExtent);
         this.datasets = datasets;
-        console.log(this.datasets);
+        
+        this.viewer.camera.flyTo({
+          // tslint:disable-next-line: max-line-length
+          destination : Cesium.Cartesian3.fromDegrees(this.currentExtent.coordinate.x, this.currentExtent.coordinate.y, 500000)
+        });
+
+        // Making The Datasets Tree
+
+        this.datasets.forEach(element => {
+          element.components.sort(this.sortByProperty('name')).forEach(comp => {
+            if (!this.componentList.includes(comp.name)) {
+              this.componentList.push(comp.name);
+            }
+          });
+          this.datasetsTree[element.name] = this.componentList;
+          this.componentList = [];
+        });
+
+        console.log(this.datasetsTree);
+        const data = this.buildFileTree({Extents: this.datasetsTree}, 0);
+
+        // Notify the change.
+        this.dataChange.next(data);
+
         this.titleService.setTitle(`${this.cdbName} - ${this.sharedService.cdbTitle}`);
       });
 
@@ -238,6 +150,112 @@ export class ExtentComponent implements OnInit {
     });
 
   }
+
+  sortByProperty(property: string) {
+    return (a, b) => {
+       if (a[property] > b[property]) {
+          return 1;
+       } else if (a[property] < b[property]) {
+          return -1;
+ }
+       return 0;
+    };
+ }
+
+  /**
+   * Build the file structure tree. The `value` is the Json object, or a sub-tree of a Json object.
+   * The return value is the list of `TodoItemNode`.
+   */
+  buildFileTree(obj: {[key: string]: any}, level: number): TodoItemNode[] {
+    return Object.keys(obj).reduce<TodoItemNode[]>((accumulator, key) => {
+      const value = obj[key];
+      const node = new TodoItemNode();
+      node.item = key;
+
+      if (value != null) {
+        if (typeof value === 'object') {
+          node.children = this.buildFileTree(value, level + 1);
+        } else {
+          node.item = value;
+        }
+      }
+
+      return accumulator.concat(node);
+    }, []);
+  }
+
+  // /** Add an item to to-do list */
+  // insertItem(parent: TodoItemNode, name: string) {
+  //   if (parent.children) {
+  //     parent.children.push({item: name} as TodoItemNode);
+  //     this.dataChange.next(this.data);
+  //   }
+  // }
+
+  updateItem(node: TodoItemNode, name: string) {
+    node.item = name;
+    this.dataChange.next(this.data);
+  }
+}
+
+/**
+ * @title Tree with checkboxes
+ */
+
+
+@Component({
+  selector: 'app-extent',
+  templateUrl: './extent.component.html',
+  styleUrls: ['./extent.component.css'],
+  providers: [ChecklistDatabase]
+})
+
+export class ExtentComponent {
+
+  /** Map from flat node to nested node. This helps us finding the nested node to be modified */
+  flatNodeMap = new Map<TodoItemFlatNode, TodoItemNode>();
+
+  /** Map from nested node to flattened node. This helps us to keep the same object for selection */
+  nestedNodeMap = new Map<TodoItemNode, TodoItemFlatNode>();
+
+  /** A selected parent node to be inserted */
+  selectedParent: TodoItemFlatNode | null = null;
+
+  /** The new item's name */
+  newItemName = '';
+
+  treeControl: FlatTreeControl<TodoItemFlatNode>;
+
+  treeFlattener: MatTreeFlattener<TodoItemNode, TodoItemFlatNode>;
+
+  dataSource: MatTreeFlatDataSource<TodoItemNode, TodoItemFlatNode>;
+
+  /** The selection for checklist */
+  checklistSelection = new SelectionModel<TodoItemFlatNode>(true /* multiple */);
+
+  public datasets: Dataset[] = [];
+  public cdbName: string;
+
+  constructor(private _database: ChecklistDatabase) {
+
+      this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel,
+      this.isExpandable, this.getChildren);
+      this.treeControl = new FlatTreeControl<TodoItemFlatNode>(this.getLevel, this.isExpandable);
+      this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
+      _database.dataChange.subscribe(data => {
+        this.dataSource.data = data;
+      });
+    }
+
+    getLevel = (node: TodoItemFlatNode) => node.level;
+
+    isExpandable = (node: TodoItemFlatNode) => node.expandable;
+
+    getChildren = (node: TodoItemNode): TodoItemNode[] => node.children;
+
+    hasChild = (_: number, _nodeData: TodoItemFlatNode) => _nodeData.expandable;
+
+    hasNoContent = (_: number, _nodeData: TodoItemFlatNode) => _nodeData.item === '';
 
   /**
    * Transformer to convert nested node to flat node. Record the nodes in maps for later use.
@@ -286,8 +304,10 @@ export class ExtentComponent implements OnInit {
     this.checkAllParentsSelection(node);
   }
 
+
   /** Toggle a leaf to-do item selection. Check all the parents to see if they changed */
   todoLeafItemSelectionToggle(node: TodoItemFlatNode): void {
+    console.log(node);
     this.checklistSelection.toggle(node);
     this.checkAllParentsSelection(node);
   }
@@ -301,6 +321,7 @@ export class ExtentComponent implements OnInit {
     }
   }
 
+  // Gets the root node (Extents)
   /** Check root node checked state and change it accordingly */
   checkRootNodeSelection(node: TodoItemFlatNode): void {
     const nodeSelected = this.checklistSelection.isSelected(node);
