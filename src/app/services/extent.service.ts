@@ -17,7 +17,7 @@ private cdbDatasets: Dataset[];
 private _checkedComponents: CDBComponent[];
 
 constructor(private http: HttpClient){
-  this.extents = this.getExtents();
+
   this._selectedExtent = new Extent();
   this.cdbDatasets = [];
   this._checkedComponents = [];

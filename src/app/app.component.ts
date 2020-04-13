@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
 
   public cesiumViewer;
   public extents: Extent[];
-  public selectedExtent: Extent[];
+  public selectedExtent: Extent;
   public currentDatasets: Dataset[];
 
   constructor(
@@ -35,7 +35,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cesiumViewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder: false});
+    this.cesiumViewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder: false,
+    });
   }
 
 
