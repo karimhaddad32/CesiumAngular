@@ -1,6 +1,6 @@
 <div class="cdb-list">
     <div *ngFor="let extent of extents">
-        <div class="card" style="background-image: url('someUrl'); background-repeat: no-repeat;">
+        <div class="card" routerLink='/{{extent.name}}' (click)= "getDatasets(extent)" style="cursor:pointer;">
             <div class="card-title">
                 <h3>
                     {{extent.name}}
@@ -11,9 +11,7 @@
                     <p>
                         Location:<br />{{extent.coordinate.y}},{{extent.coordinate.x}}
                     </p>
-                </div>
-                <p [innerHtml]='extent.type'>Test</p>
-                <a routerLink='/{{extent.name}}' class="open-cesium" (click)= "getDatasets(extent)">Examin</a>
+                </div>           
             </div>
         </div>
     </div>

@@ -1,3 +1,6 @@
+import { Feature } from './../geojson.interface';
+import { DATASETS } from './../mock-datasets';
+import { element } from 'protractor';
 import { EXTENTS } from './../mock-extents';
 import { TreeChecklistComponent } from './../tree-checklist.component';
 import { AppComponent } from './../app.component';
@@ -23,6 +26,7 @@ import { Z_NEED_DICT } from 'zlib';
 export class TodoItemNode {
   children: TodoItemNode[];
   item: string;
+  parent: string;
 }
 
 /** Flat to-do item node with expandable and level information */
@@ -30,6 +34,7 @@ export class TodoItemFlatNode {
   item: string;
   level: number;
   expandable: boolean;
+  parent: string;
 }
 
 /**
@@ -43,13 +48,8 @@ export class ChecklistDatabase {
   dataChange = new BehaviorSubject<TodoItemNode[]>([]);
 
   get data(): TodoItemNode[] { return this.dataChange.value; }
-  public currentExtent: Extent;
   public datasets: Dataset[];
   public datasetsTree: {};
-  public componentList: any[];
-  public lodList: string[];
-  cdbName: string;
-  viewer: any;
 
   // ActivatedRoute to get the extension in the URL
   // ExtentService to get the data of the provided extension
@@ -58,26 +58,17 @@ export class ChecklistDatabase {
   // Title is to access the page title.
   // Meta is to change the meta tags of the website.
   constructor(
-    private service: ExtentService,
     private route: ActivatedRoute,
     private extentService: ExtentService,
-    private router: Router,
-    private titleService: Title,
-    private sharedService: SharedService,
-    private meta: Meta,
-    private app: AppComponent) {
+    private router: Router
+    ) {
 
     this.datasetsTree = {};
-    this.componentList = [];
-    this.lodList = [];
     this.initialize();
 
   }
 
   initialize() {
-
-    this.viewer = this.app.cesiumViewer;
-
 
     this.route.params.subscribe(params => {
       this.extentService.getDatasets(params.name)
@@ -86,67 +77,27 @@ export class ChecklistDatabase {
           this.router.navigateByUrl('404');
           return;
         }
-
-        this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
-        console.log(this.currentExtent);
         this.datasets = datasets;
-        
-        this.viewer.camera.flyTo({
-          // tslint:disable-next-line: max-line-length
-          destination : Cesium.Cartesian3.fromDegrees(this.currentExtent.coordinate.x, this.currentExtent.coordinate.y, 500000)
-        });
-
         // Making The Datasets Tree
-
         this.datasets.forEach(element => {
+          if (!(element.name in this.datasetsTree)) {
+            this.datasetsTree[element.name] = {};
+          }
           element.components.sort(this.sortByProperty('name')).forEach(comp => {
-            if (!this.componentList.includes(comp.name)) {
-              this.componentList.push(comp.name);
+            if (!(comp.key + '.' + comp.name in this.datasetsTree[element.name])) {
+              this.datasetsTree[element.name][comp.key + '.' + comp.name] = [];
             }
+            this.datasetsTree[element.name][comp.key + '.' + comp.name].push(comp.lodLevel);
           });
-          this.datasetsTree[element.name] = this.componentList;
-          this.componentList = [];
         });
 
-        console.log(this.datasetsTree);
-        const data = this.buildFileTree({Extents: this.datasetsTree}, 0);
+        const data = this.buildFileTree({Extents: this.datasetsTree}, 0, '');
 
         // Notify the change.
         this.dataChange.next(data);
 
-        this.titleService.setTitle(`${this.cdbName} - ${this.sharedService.cdbTitle}`);
       });
 
-      this.meta.addTags([
-        {
-          name: 'description',
-          content: this.cdbName + ' CDB in Cesium'
-        },
-        {
-          property: 'og:title',
-          content: `${this.cdbName} - ${this.sharedService.cdbTitle}`
-        },
-        {
-          property: 'og:type',
-          content: 'Web-site'
-        },
-        {
-          property: 'og:url',
-          content: this.sharedService.baseUrl + this.cdbName
-        },
-        // {
-        //   property: 'og:image',
-        //   content: ''
-        // },
-        {
-          property: 'og:description',
-          content: this.cdbName + ' CDB in Cesium'
-        },
-        {
-          property: 'og:site_name',
-          content: this.sharedService.cdbTitle
-        }
-      ]);
     });
 
   }
@@ -166,15 +117,26 @@ export class ChecklistDatabase {
    * Build the file structure tree. The `value` is the Json object, or a sub-tree of a Json object.
    * The return value is the list of `TodoItemNode`.
    */
-  buildFileTree(obj: {[key: string]: any}, level: number): TodoItemNode[] {
+  buildFileTree(obj: {[key: string]: any}, level: number, parent: string): TodoItemNode[] {
     return Object.keys(obj).reduce<TodoItemNode[]>((accumulator, key) => {
       const value = obj[key];
       const node = new TodoItemNode();
-      node.item = key;
+
+      if (key.split('.').length > 1 ) {
+        node.item = key.split('.')[1];
+      } else {
+        node.item = key;
+      }
+
+      node.parent = parent;
 
       if (value != null) {
         if (typeof value === 'object') {
-          node.children = this.buildFileTree(value, level + 1);
+          if (key.split('.').length > 1 ) {
+            node.children = this.buildFileTree(value, level + 1, key.split('.')[0]);
+          } else {
+            node.children = this.buildFileTree(value, level + 1, node.item);
+          }
         } else {
           node.item = value;
         }
@@ -210,7 +172,25 @@ export class ChecklistDatabase {
   providers: [ChecklistDatabase]
 })
 
-export class ExtentComponent {
+export class ExtentComponent implements OnInit {
+
+  constructor(
+    private _database: ChecklistDatabase,
+    private service: ExtentService,
+    private titleService: Title,
+    private sharedService: SharedService,
+    private meta: Meta,
+    private app: AppComponent
+    ) {
+
+      this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel,
+      this.isExpandable, this.getChildren);
+      this.treeControl = new FlatTreeControl<TodoItemFlatNode>(this.getLevel, this.isExpandable);
+      this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
+      _database.dataChange.subscribe(data => {
+        this.dataSource.data = data;
+      });
+    }
 
   /** Map from flat node to nested node. This helps us finding the nested node to be modified */
   flatNodeMap = new Map<TodoItemFlatNode, TodoItemNode>();
@@ -233,23 +213,64 @@ export class ExtentComponent {
   /** The selection for checklist */
   checklistSelection = new SelectionModel<TodoItemFlatNode>(true /* multiple */);
 
-  public datasets: Dataset[] = [];
-  public cdbName: string;
+  public currentExtent: Extent;
+  public currentDatasets: Dataset[];
+  viewer: any;
 
-  constructor(private _database: ChecklistDatabase) {
 
-      this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel,
-      this.isExpandable, this.getChildren);
-      this.treeControl = new FlatTreeControl<TodoItemFlatNode>(this.getLevel, this.isExpandable);
-      this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
-      _database.dataChange.subscribe(data => {
-        this.dataSource.data = data;
-      });
-    }
+  public currentFeatures: Feature[];
+
+  ngOnInit(): void {
+    this.currentFeatures = [];
+    this.viewer = this.app.cesiumViewer;
+    this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
+    this.service.getDatasets(this.currentExtent.name).subscribe(datasets => this.currentDatasets = datasets);
+    const cdbName = this.currentExtent.name;
+    this.viewer.camera.flyTo({
+      // tslint:disable-next-line: max-line-length
+      destination : Cesium.Cartesian3.fromDegrees(this.currentExtent.coordinate.x, this.currentExtent.coordinate.y, 500000)
+    });
+
+    this.titleService.setTitle(`${cdbName} - ${this.sharedService.cdbTitle}`);
+
+    this.meta.addTags([
+      {
+        name: 'description',
+        content: cdbName + ' CDB in Cesium'
+      },
+      {
+        property: 'og:title',
+        content: `${cdbName} - ${this.sharedService.cdbTitle}`
+      },
+      {
+        property: 'og:type',
+        content: 'Web-site'
+      },
+      {
+        property: 'og:url',
+        content: this.sharedService.baseUrl + cdbName
+      },
+      // {
+      //   property: 'og:image',
+      //   content: ''
+      // },
+      {
+        property: 'og:description',
+        content: cdbName + ' CDB in Cesium'
+      },
+      {
+        property: 'og:site_name',
+        content: this.sharedService.cdbTitle
+      }
+    ]);
+
+  }
 
     getLevel = (node: TodoItemFlatNode) => node.level;
 
     isExpandable = (node: TodoItemFlatNode) => node.expandable;
+
+    getParent = (node: TodoItemFlatNode) => node.parent;
 
     getChildren = (node: TodoItemNode): TodoItemNode[] => node.children;
 
@@ -268,6 +289,7 @@ export class ExtentComponent {
     flatNode.item = node.item;
     flatNode.level = level;
     flatNode.expandable = !!node.children;
+    flatNode.parent = node.parent;
     this.flatNodeMap.set(flatNode, node);
     this.nestedNodeMap.set(node, flatNode);
     return flatNode;
@@ -307,7 +329,6 @@ export class ExtentComponent {
 
   /** Toggle a leaf to-do item selection. Check all the parents to see if they changed */
   todoLeafItemSelectionToggle(node: TodoItemFlatNode): void {
-    console.log(node);
     this.checklistSelection.toggle(node);
     this.checkAllParentsSelection(node);
   }
@@ -319,6 +340,55 @@ export class ExtentComponent {
       this.checkRootNodeSelection(parent);
       parent = this.getParentNode(parent);
     }
+    const oldFeatures = this.currentFeatures;
+
+    this.currentFeatures = this.getFeatures(this.checklistSelection.selected.filter(a => a.level === 3));
+    
+    this.updateCesium(oldFeatures);
+
+
+  }
+
+  updateCesium(oldFeatures) {
+    
+    oldFeatures.forEach(feature => {
+      if (!this.currentFeatures.includes(feature)){
+
+        const datasource = Cesium.GeoJsonDataSource.load(feature);
+        console.log(feature);
+        this.viewer.dataSources.remove(datasource, true);
+
+      }
+    });
+
+    Cesium.Math.setRandomNumberSeed(3);
+
+    this.currentFeatures.forEach(feature => {
+      const datasource = Cesium.GeoJsonDataSource.load(feature);
+
+      if (!this.viewer.dataSources.contains(datasource)){
+        this.viewer.dataSources.add(datasource);
+      }
+      
+      this.viewer.dataSources._dataSources.forEach( source =>  {
+      console.log(source);
+      let lod = source.entities._entities.values[0]._properties._Lod_Level._value.split('L')[1];
+
+      if (lod.includes('C')) {
+          lod = -1 * parseInt(lod.split('C')[1]);
+      }
+
+      const height =  (parseInt(lod) + 10 )  * 5000;
+
+      source.entities._entities.values.forEach(value => {
+
+          value.polygon.height._value = height;
+
+      });
+
+    });
+
+  });
   }
 
   // Gets the root node (Extents)
@@ -356,16 +426,34 @@ export class ExtentComponent {
     return null;
   }
 
-  /** Select the category so we can insert the new item. */
-  addNewItem(node: TodoItemFlatNode) {
-    const parentNode = this.flatNodeMap.get(node);
-    this._database.insertItem(parentNode!, '');
-    this.treeControl.expand(node);
+  getFeatures(selected: TodoItemFlatNode[]): Feature[] {
+
+    const keysList = selected.map(item => item.parent);
+    const featuresList = [];
+
+    selected.forEach(item => {
+      this.currentDatasets.forEach(dataset => {
+        const component = dataset.components.filter(x => x.key === item.parent && x.lodLevel === item.item)[0];
+        if (component !== undefined) {
+          featuresList.push(component.feature);
+        }
+      });
+    });
+    return featuresList;
   }
 
-  /** Save the node to database */
-  saveNode(node: TodoItemFlatNode, itemValue: string) {
-    const nestedNode = this.flatNodeMap.get(node);
-    this._database.updateItem(nestedNode!, itemValue);
-  }
+  // /** Select the category so we can insert the new item. */
+  // addNewItem(node: TodoItemFlatNode) {
+  //   const parentNode = this.flatNodeMap.get(node);
+  //   this._database.insertItem(parentNode!, '');
+  //   this.treeControl.expand(node);
+  // }
+
+  // /** Save the node to database */
+  // saveNode(node: TodoItemFlatNode, itemValue: string) {
+  //   const nestedNode = this.flatNodeMap.get(node);
+  //   this._database.updateItem(nestedNode!, itemValue);
+  // }
+
+
 }

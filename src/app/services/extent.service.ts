@@ -33,35 +33,39 @@ serverUrl = '';
       {
         id: 1,
         name: 'Tijuana',
-        coordinate: {x: -117.0382, y: 32.5149},
-        totalFeatureCount: 23,
-        type: '',
-        features: []
+        coordinate: {x: -117.0382, y: 32.5149}
       },
       {
         id: 2,
         name: 'Yemen',
-        coordinate: {x: 44.4216433, y: 15.0565379},
-        totalFeatureCount: 23,
-        type: '',
-        features: []
-    }
+        coordinate: {x: 44.4216433, y: 15.0565379}
+    },
+      {
+        id: 3,
+        name: 'Pendleton',
+        coordinate: {x: -117.5 , y: 33.523}
+      }
+      ,
+      {
+        id: 4,
+        name: 'Charlottetown',
+        coordinate: {x: -56.12619, y: 52.76273}
+      }
   ];
     return of(this.extents);
     // Rest API call from the web server.
     return this.http.get<Extent[]>(this.serverUrl);
   }
 
-// Returns the requested CDB details
+// Returns the requested CDB Datasets
   getDatasets(name: string): Observable<Dataset[]> {
     // Tempo
-   
-    const extents: Extent[] = EXTENTS.filter(a => a.name === name);
-    console.log(extents);
+
+    const extents = this.extents.filter(a => a.name === name);
 
     if (extents.length > 0) {
       this.cdbDatasets = DATASETS;
-      this.selectedExtent = EXTENTS.filter(a => a.name === name)[0];
+      this.selectedExtent = this.extents.filter(a => a.name === name)[0];
     } else {
       this.cdbDatasets = undefined;
       this.selectedExtent = null;

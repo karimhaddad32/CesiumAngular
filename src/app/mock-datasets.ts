@@ -250,7 +250,7 @@ export const DATASETS: Dataset[] =
             {
                 name: 'Man-Made Point Features',
                 key: 'D100_S001_T001',
-                lodLevel: 'l06',
+                lodLevel: 'L06',
                 feature: {
                     type: 'Feature',
                     geometry: {

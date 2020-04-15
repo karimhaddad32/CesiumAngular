@@ -1,9 +1,9 @@
  export class Geometry {
     type: string;
-    coordinates: number[][][];
+    coordinates: any[];
 }
 
-export class Properties {
+ export class Properties {
     Lod_Level: string;
     data_set: string;
     component: string;
@@ -12,13 +12,13 @@ export class Properties {
     features: any[];
 }
 
-export class Feature {
+ export class Feature {
     type: string;
     geometry: Geometry;
     properties: Properties;
 }
 
-export class GeojsonObject{
+ export class GeojsonObject {
     type: string;
     features: Feature[];
 }
