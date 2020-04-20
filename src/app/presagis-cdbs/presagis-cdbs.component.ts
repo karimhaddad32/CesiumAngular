@@ -53,20 +53,20 @@ export class PresagisCDBsComponent implements OnInit {
 
             // data["features"].forEach(element => {
 
-            //     var datasourse = Cesium.GeoJsonDataSource.load(element,{
+                // var datasourse = Cesium.GeoJsonDataSource.load(element,{
 
-            //         stroke: Cesium.Color.fromRandom({
-            //             alpha: 1.0
-            //         }),
-            //         fill: Cesium.Color.fromRandom({
-            //             alpha: 1.0
-            //         }),
-            //         clampToGround: false,
-            //         markerColor: Cesium.Color.fromRandom({
-            //             alpha: 1.0
-            //         })
+                //     stroke: Cesium.Color.fromRandom({
+                //         alpha: 1.0
+                //     }),
+                //     fill: Cesium.Color.fromRandom({
+                //         alpha: 1.0
+                //     }),
+                //     clampToGround: false,
+                //     markerColor: Cesium.Color.fromRandom({
+                //         alpha: 1.0
+                //     })
 
-            //     });
+                // });
 
 
             //     this.viewer.dataSources.add(datasourse);

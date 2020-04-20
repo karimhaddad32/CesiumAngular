@@ -15,11 +15,13 @@ private extents: Extent[];
 private _selectedExtent: Extent;
 private cdbDatasets: Dataset[];
 private _checkedComponents: CDBComponent[];
+private testCdbDatasets: Extent;
 
 constructor(private http: HttpClient) {
 
   this._selectedExtent = new Extent();
   this.cdbDatasets = [];
+  this.testCdbDatasets = null;
   this._checkedComponents = [];
 }
 
@@ -33,23 +35,32 @@ serverUrl = '';
       {
         id: 1,
         name: 'Tijuana',
-        coordinate: {x: -117.0382, y: 32.5149}
+        coordinate: {x: -117.0382, y: 32.5149},
+        features: [],
+        type: ' ',
       },
       {
         id: 2,
         name: 'Yemen',
-        coordinate: {x: 44.4216433, y: 15.0565379}
+        coordinate: {x: 44.4216433, y: 15.0565379},
+        features: [],
+        type: ' '
+
     },
       {
         id: 3,
         name: 'Pendleton',
-        coordinate: {x: -117.5 , y: 33.523}
+        coordinate: {x: -117.5 , y: 33.523},
+        features: [],
+        type: ' '
       }
       ,
       {
         id: 4,
         name: 'Charlottetown',
-        coordinate: {x: -56.12619, y: 52.76273}
+        coordinate: {x: -56.12619, y: 52.76273},
+        features: [],
+        type: ' '
       }
   ];
     return of(this.extents);
@@ -73,6 +84,21 @@ serverUrl = '';
     return of(this.cdbDatasets);
     // Rest API call from the web server.
     return this.http.get<Dataset[]>(this.serverUrl + '/name');
+  }
+
+  getCDBDatasets(name: string): Observable<Extent>{
+
+    const extents = this.extents.filter(a => a.name === name);
+
+    if (extents.length > 0) {
+      this.testCdbDatasets = EXTENTS.filter(x => x.name === name)[0];
+      this.selectedExtent = this.extents.filter(a => a.name === name)[0];
+    } else {
+      this.testCdbDatasets = undefined;
+      this.selectedExtent = null;
+    }
+
+    return of(this.testCdbDatasets);
   }
 
   getSelectedExtent(): Observable<Extent> {

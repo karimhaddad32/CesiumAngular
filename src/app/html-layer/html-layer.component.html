@@ -1,0 +1,16 @@
+<ac-layer acFor="let html of htmls$" [context]="this">
+  <ac-html-desc props="{position: html.position, show: html.show}">
+    <ng-template let-html>
+      <div class="contianer">
+        <div>{{html.name}}</div>
+        <button (click)="changeText(html, 'Test')">change</button>
+      </div>
+    </ng-template>
+  </ac-html-desc>
+</ac-layer>
+
+<div class="remove-btn">
+  <button mat-flat-button (click)="removeFirst()" >remove first</button>
+  <button mat-flat-button (click)="updateHtml()">update</button>
+  <button mat-flat-button (click)="toggleShow()">toggle show</button>
+</div>

@@ -1,7 +1,8 @@
 export class Extent {
-    id: number;
     name: string;
     coordinate: {x: number, y: number};
+    features: Feature[];
+    type: string;
 }
 
 export class Geometry {
@@ -18,8 +19,8 @@ export class Properties {
     // tslint:disable-next-line: variable-name
     component_key: string;
     // tslint:disable-next-line: variable-name
-    // features_count: number;
-    // features: Feature[];
+    features_count: number;
+    features: Feature[];
 }
 
 export class Feature {

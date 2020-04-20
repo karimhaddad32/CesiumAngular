@@ -1,3 +1,4 @@
+import { MapComponent } from './map.component';
 import { FooterComponent } from './footer/footer.component';
 import { TestPageComponent } from './test-page/test-page.component';
 import { SideBarComponent } from './side-bar/side-bar.component';
@@ -56,6 +57,11 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatTreeModule} from '@angular/material/tree';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import {AngularCesiumModule} from 'angular-cesium';
+import { HtmlLayerComponent } from './html-layer/html-layer.component';
+
+
+
 
 @NgModule({
    declarations: [
@@ -68,8 +74,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
       TestPageComponent,
       FooterComponent,
       ExtentComponent,
-      NotFoundComponent
-      
+      NotFoundComponent,
+      HtmlLayerComponent,
+      MapComponent
    ],
    imports: [
       BrowserAnimationsModule,
@@ -83,7 +90,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
       MatButtonModule,
       MatDividerModule,
       MatCheckboxModule,
-      MatFormFieldModule
+      MatFormFieldModule,
+      AngularCesiumModule.forRoot()
    ],
    providers: [
       MainPageComponent

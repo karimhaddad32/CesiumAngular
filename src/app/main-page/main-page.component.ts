@@ -1,9 +1,7 @@
 import { Dataset } from './../classes/dataset';
 import { AppComponent } from './../app.component';
-import { CesiumComponent } from './../cesium/cesium.component';
 import { SharedService } from './../services/shared.service';
 import { ExtentService } from './../services/extent.service';
-import { EXTENTS } from './../mock-extents';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { Extent } from '../classes/extent';
 import { Title } from '@angular/platform-browser';
@@ -47,7 +45,5 @@ export class MainPageComponent implements OnInit {
       (this.datasets = datasets)
       );
     console.log(this.datasets);
-
   }
-
 }
