@@ -1,4 +1,5 @@
 export class Extent {
+    id: number;
     name: string;
     coordinate: {x: number, y: number};
     features: Feature[];
