@@ -16,7 +16,7 @@ import { Extent } from '../classes/extent';
 
 
 /**
- * Node for to-do item
+ * Node for list item
  */
 export class TodoItemNode {
   children: TodoItemNode[];
@@ -24,7 +24,7 @@ export class TodoItemNode {
   parent: string;
 }
 
-/** Flat to-do item node with expandable and level information */
+/** Flat list item node with expandable and level information */
 export class TodoItemFlatNode {
   item: string;
   level: number;
@@ -54,13 +54,9 @@ export class ChecklistDatabase {
   // Meta is to change the meta tags of the website.
   constructor(
     private route: ActivatedRoute,
-    private extentService: ExtentService,
-    private router: Router
-    ) {
-
+    private extentService: ExtentService) {
     this.datasetsTree = {};
     this.initialize();
-
   }
 
   initialize() {

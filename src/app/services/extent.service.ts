@@ -86,19 +86,51 @@ serverUrl = '';
     return this.http.get<Dataset[]>(this.serverUrl + '/name');
   }
 
-  getCDBDatasets(name: string): Observable<Extent>{
+  getCDBDatasets(name: string): Observable<any>{
+
+
+    // HTML Outside
+    // const extents = this.extents.filter(a => a.name === name);
+
+    // if (extents.length > 0) {
+    //   this.testCdbDatasets = EXTENTS.filter(x => x.name === name)[0];
+    //   this.selectedExtent = this.extents.filter(a => a.name === name)[0];
+    // } else {
+    //   this.testCdbDatasets = undefined;
+    //   this.selectedExtent = null;
+    // }
+
+
+    // HTML Inside
 
     const extents = this.extents.filter(a => a.name === name);
-
+    const datasetsObject = {};
     if (extents.length > 0) {
+
       this.testCdbDatasets = EXTENTS.filter(x => x.name === name)[0];
+
+      this.testCdbDatasets.features.forEach(dataset => {
+        const properties = dataset.properties;
+        if(!(properties.data_set in datasetsObject)){
+          datasetsObject[properties.data_set] = {};
+        }
+
+        if(!(properties.component in datasetsObject[properties.data_set])){
+          datasetsObject[properties.data_set][properties.component] = []
+        }
+
+        if(!datasetsObject[properties.data_set][properties.component].includes(properties.Lod_Level)){
+          datasetsObject[properties.data_set][properties.component].push(properties.Lod_Level);
+        }
+      });
+
       this.selectedExtent = this.extents.filter(a => a.name === name)[0];
     } else {
       this.testCdbDatasets = undefined;
       this.selectedExtent = null;
     }
-
-    return of(this.testCdbDatasets);
+    console.log(datasetsObject);
+    return of(datasetsObject);
   }
 
   getSelectedExtent(): Observable<Extent> {

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { ViewerConfiguration } from 'angular-cesium';
+import { ViewerConfiguration, SceneMode } from 'angular-cesium';
 
 @Component({
   selector: 'map',
@@ -15,10 +15,11 @@ import { ViewerConfiguration } from 'angular-cesium';
 export class MapComponent  {
   @Input() name: string;
 
-  constructor(private viewerConf: ViewerConfiguration) {
+  constructor(viewerConf: ViewerConfiguration) {
 
     // viewerOptions will be passed the Cesium.Viewer contstuctor 
     viewerConf.viewerOptions = {
+      sceneMode: SceneMode.SCENE2D,
       selectionIndicator: false,
       timeline: false,
       infoBox: false,

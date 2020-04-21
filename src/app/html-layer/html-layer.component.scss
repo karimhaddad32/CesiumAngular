@@ -1,10 +1,28 @@
-.remove-btn {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 100;
-  margin: 5px;
+.content-menu {
+  position: absolute;
+  z-index: 2;
+  margin: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  width: 20%;
+  height: auto;
+  max-height: 500px;
+  overflow: auto;
+  color: white;
 }
+
+.list-item{
+  color: white;
+  text-decoration: none;
+  margin-bottom: 5px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.list-item:hover{
+  color:green;
+}
+
+
 
 .contianer {
   display: flex;

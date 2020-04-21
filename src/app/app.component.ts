@@ -35,8 +35,8 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cesiumViewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder: false,
-    });
+    // this.cesiumViewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder: false,
+    // });
   }
 
 
