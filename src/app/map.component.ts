@@ -6,7 +6,9 @@ import { ViewerConfiguration, SceneMode } from 'angular-cesium';
   template: `
   <div style="height: 100vh">
     <ac-map>
-      <html-layer></html-layer>
+        <router-outlet>
+
+        </router-outlet>
     </ac-map>
   </div>`,
   providers: [ViewerConfiguration],
@@ -19,7 +21,7 @@ export class MapComponent  {
 
     // viewerOptions will be passed the Cesium.Viewer contstuctor 
     viewerConf.viewerOptions = {
-      sceneMode: SceneMode.SCENE2D,
+      sceneMode: SceneMode.SCENE3D,
       selectionIndicator: false,
       timeline: false,
       infoBox: false,

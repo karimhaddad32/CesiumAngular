@@ -23,21 +23,35 @@ export class AppComponent implements OnInit {
   public extents: Extent[];
   public selectedExtent: Extent;
   public currentDatasets: Dataset[];
-
+  isOpenNav: boolean;
   constructor(
     private extentService: ExtentService,
     private titleService: Title,
-    private sharedService: SharedService,
+    private sharedService: SharedService
     ) {
       this.extents = [];
       this.selectedExtent = new Extent();
       this.currentDatasets = [];
+      this.isOpenNav = true;
   }
 
   ngOnInit(): void {
-    // this.cesiumViewer = new Cesium.Viewer('cesiumContainer', {baseLayerPicker: true, geocoder: false,
-    // });
   }
+
+  toggleNav() {
+    if (!this.isOpenNav){
+      document.getElementById('content-menu').style.width = '25%';
+      document.getElementById('openBtn').style.width = '25%';
+      document.getElementById('openBtn').innerHTML = '☰ Toggle Sidepanel'
+      this.isOpenNav = true;
+    }else{
+      document.getElementById('content-menu').style.width = '0';
+      document.getElementById('openBtn').style.width = '50px';
+      document.getElementById('openBtn').innerHTML = '☰'
+      this.isOpenNav = false;
+    }
+  }
+
 
 
 

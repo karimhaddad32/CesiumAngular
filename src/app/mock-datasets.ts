@@ -1,6 +1,6 @@
 import { Dataset } from './classes/dataset';
 
-export const DATASETS: Dataset[] =
+export const DATASETS: any[] =
 [
     {
         name: 'Elevation',

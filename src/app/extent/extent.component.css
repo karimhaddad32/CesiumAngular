@@ -1,4 +1,14 @@
+
+mat-tree {
+  background: transparent;
+}
+
+mat-tree mat-checkbox {
+  color: white;
+}
+
+
 mat-tree-node button
 {
-    margin-left: 2px;
+    margin-left: 0px;
 }

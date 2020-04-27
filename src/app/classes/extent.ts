@@ -4,6 +4,7 @@ export class Extent {
     coordinate: {x: number, y: number};
     features: Feature[];
     type: string;
+    baseExtents: {x1: number, x2: number, y1: number, y2: number};
 }
 
 export class Geometry {

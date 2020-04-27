@@ -2,7 +2,7 @@ import { Feature } from './../geojson.interface';
 import { AppComponent } from './../app.component';
 import { SharedService } from './../services/shared.service';
 import { ExtentService } from './../services/extent.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { Dataset } from '../classes/dataset';
@@ -10,8 +10,11 @@ import {SelectionModel} from '@angular/cdk/collections';
 import {FlatTreeControl} from '@angular/cdk/tree';
 import { Injectable} from '@angular/core';
 import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
-import {BehaviorSubject} from 'rxjs';
+import {BehaviorSubject, Observable, from as observableFrom, Subject} from 'rxjs';
 import { Extent } from '../classes/extent';
+import { AcLayerComponent, CameraService, AcNotification, ActionType, AcEntity, MapsManagerService } from 'angular-cesium';
+import { merge, map } from 'rxjs/operators'
+import { isArray } from 'util';
 
 
 
@@ -41,7 +44,6 @@ export class TodoItemFlatNode {
 @Injectable()
 export class ChecklistDatabase {
   dataChange = new BehaviorSubject<TodoItemNode[]>([]);
-
   get data(): TodoItemNode[] { return this.dataChange.value; }
   public datasets: Dataset[];
   public datasetsTree: {};
@@ -54,7 +56,8 @@ export class ChecklistDatabase {
   // Meta is to change the meta tags of the website.
   constructor(
     private route: ActivatedRoute,
-    private extentService: ExtentService) {
+    private extentService: ExtentService,
+    private router: Router) {
     this.datasetsTree = {};
     this.initialize();
   }
@@ -62,52 +65,15 @@ export class ChecklistDatabase {
   initialize() {
 
     this.route.params.subscribe(params => {
-      // Working Perfectly
-      // this.extentService.getDatasets(params.name)
-      // .subscribe(datasets => {
-      //   if (datasets === undefined) {
-      //     this.router.navigateByUrl('404');
-      //     return;
-      //   }
-      //   this.datasets = datasets;
-      //   // Making The Datasets Tree
-      //   this.datasets.forEach(element => {
-      //     if (!(element.name in this.datasetsTree)) {
-      //       this.datasetsTree[element.name] = {};
-      //     }
-      //     element.components.sort(this.sortByProperty('name')).forEach(comp => {
-      //       if (!(comp.key + '.' + comp.name in this.datasetsTree[element.name])) {
-      //         this.datasetsTree[element.name][comp.key + '.' + comp.name] = [];
-      //       }
-      //       this.datasetsTree[element.name][comp.key + '.' + comp.name].push(comp.lodLevel);
-      //     });
-      //   });
 
-      //   const data = this.buildFileTree({Extents: this.datasetsTree}, 0, '');
-
-      //   // Notify the change.
-      //   this.dataChange.next(data);
-
-      // });
-
-
-      // Also working Perfectly
       this.extentService.getCDBDatasets(params.name).subscribe(extent => {
+        if (extent === undefined) {
+              this.router.navigateByUrl('404');
+              return;
+            }
         this.testExtent = extent;
 
-        this.testExtent.features.forEach(feature => {
-          if (!(feature.properties.data_set in this.datasetsTree)) {
-            this.datasetsTree[feature.properties.data_set] = {};
-          }
-          if (!(feature.properties.component_key + '.' + feature.properties.component in this.datasetsTree[feature.properties.data_set])) {
-            this.datasetsTree[feature.properties.data_set][feature.properties.component_key + '.' + feature.properties.component] = [];
-          }
-          this.datasetsTree[feature.properties.data_set][feature.properties.component_key + '.' + feature.properties.component]
-          .push(feature.properties.Lod_Level);
-
-        });
-
-        const data = this.buildFileTree({Extents: this.datasetsTree}, 0, '');
+        const data = this.buildFileTree({Extents: this.testExtent}, 0, '');
 
         // Notify the change.
         this.dataChange.next(data);
@@ -129,6 +95,7 @@ export class ChecklistDatabase {
     };
  }
 
+
   /**
    * Build the file structure tree. The `value` is the Json object, or a sub-tree of a Json object.
    * The return value is the list of `TodoItemNode`.
@@ -137,6 +104,7 @@ export class ChecklistDatabase {
     return Object.keys(obj).reduce<TodoItemNode[]>((accumulator, key) => {
       const value = obj[key];
       const node = new TodoItemNode();
+      let newVal: any[] = null;
 
       if (key.split('.').length > 1 ) {
         node.item = key.split('.')[1];
@@ -147,11 +115,22 @@ export class ChecklistDatabase {
       node.parent = parent;
 
       if (value != null) {
+        if (Array.isArray(value)){
+          newVal = value.filter(x => x.indexOf('LC') < 0)
+          if (newVal.length === 0){
+            const lowestLod = value.filter(x => x.indexOf('LC') >= 0).pop();
+            newVal.unshift(lowestLod)
+          }
+        }
         if (typeof value === 'object') {
           if (key.split('.').length > 1 ) {
             node.children = this.buildFileTree(value, level + 1, key.split('.')[0]);
           } else {
-            node.children = this.buildFileTree(value, level + 1, node.item);
+            if (newVal != null){
+              node.children = this.buildFileTree(newVal, level + 1, node.item);
+            }else{
+              node.children = this.buildFileTree(value, level + 1, node.item);
+            }
           }
         } else {
           node.item = value;
@@ -180,7 +159,6 @@ export class ChecklistDatabase {
  * @title Tree with checkboxes
  */
 
-
 @Component({
   selector: 'app-extent',
   templateUrl: './extent.component.html',
@@ -189,24 +167,6 @@ export class ChecklistDatabase {
 })
 
 export class ExtentComponent implements OnInit {
-
-  constructor(
-    _database: ChecklistDatabase,
-    private service: ExtentService,
-    private titleService: Title,
-    private sharedService: SharedService,
-    private meta: Meta,
-    private app: AppComponent
-    ) {
-
-      this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel,
-      this.isExpandable, this.getChildren);
-      this.treeControl = new FlatTreeControl<TodoItemFlatNode>(this.getLevel, this.isExpandable);
-      this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
-      _database.dataChange.subscribe(data => {
-        this.dataSource.data = data;
-      });
-    }
 
   /** Map from flat node to nested node. This helps us finding the nested node to be modified */
   flatNodeMap = new Map<TodoItemFlatNode, TodoItemNode>();
@@ -229,39 +189,77 @@ export class ExtentComponent implements OnInit {
   /** The selection for checklist */
   checklistSelection = new SelectionModel<TodoItemFlatNode>(true /* multiple */);
 
+  // Data Variables
   public currentExtent: Extent;
   public currentDatasets: Dataset[];
-  public testExtent: Extent;
-  viewer: any;
-
-
+  public cdbDatasets: any;
   public currentFeatures: Feature[];
+
+  // Cesium Variables.
+  @ViewChild(AcLayerComponent, {static: false}) layer: AcLayerComponent;
+  polygons$ : Observable<AcNotification>;
+  polyLines$: Observable<AcNotification>;
+  polyLinesShow = true;
+  polygonsShow = true
+  updater = new Subject<AcNotification>();
+  cesiumEntities : {} = {};
+  entiyCounter = 0;
+  cesiumViewer;
+
+  constructor(
+    _database: ChecklistDatabase,
+    private service: ExtentService,
+    private titleService: Title,
+    private sharedService: SharedService,
+    private meta: Meta,
+    private app: AppComponent,
+    private camera: CameraService,
+    private mapsManagerService: MapsManagerService
+    ) {
+      this.cesiumViewer = mapsManagerService.getMap().getCesiumViewer();
+      this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel,
+      this.isExpandable, this.getChildren);
+      this.treeControl = new FlatTreeControl<TodoItemFlatNode>(this.getLevel, this.isExpandable);
+      this.dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
+      _database.dataChange.subscribe(data => {
+        this.dataSource.data = data;
+      });
+    }
+
+
 
   ngOnInit(): void {
     this.currentFeatures = [];
 
-    this.viewer = this.app.cesiumViewer;
-    this.viewer.dataSources.removeAll(true);
+    for (let index = 0; index < this.cesiumViewer.dataSources.length; index++) {
+      const element = this.cesiumViewer.dataSources.get(index);
+      this.cesiumViewer.dataSources.remove(element)
+    }
+
+    console.log(this.cesiumViewer.dataSources);
 
     this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
-    this.service.getDatasets(this.currentExtent.name).subscribe(datasets => this.currentDatasets = datasets);
-    this.service.getCDBDatasets(this.currentExtent.name).subscribe(extent => this.testExtent = extent);
-    const cdbName = this.currentExtent.name;
-    this.viewer.camera.flyTo({
-      // tslint:disable-next-line: max-line-length
-      destination : Cesium.Cartesian3.fromDegrees(this.currentExtent.coordinate.x, this.currentExtent.coordinate.y, 500000)
-    });
+    this.service.getCDBDatasets(this.currentExtent.name).subscribe(datasets => this.cdbDatasets = datasets);
 
-    this.titleService.setTitle(`${cdbName} - ${this.sharedService.cdbTitle}`);
+    this.camera.cameraFlyTo({
+      destination : Cesium.Cartesian3.fromDegrees(
+        (this.currentExtent.baseExtents.x1 + this.currentExtent.baseExtents.x2)/2,
+        (this.currentExtent.baseExtents.y1 +this.currentExtent.baseExtents.y2)/2,
+        500000.0)
+    })
+
+    this.createCesiumCDBBorders();
+
+    this.titleService.setTitle(`${this.currentExtent.name} - ${this.sharedService.cdbTitle}`);
 
     this.meta.addTags([
       {
         name: 'description',
-        content: cdbName + ' CDB in Cesium'
+        content: this.currentExtent.name + ' CDB in Cesium'
       },
       {
         property: 'og:title',
-        content: `${cdbName} - ${this.sharedService.cdbTitle}`
+        content: `${this.currentExtent.name} - ${this.sharedService.cdbTitle}`
       },
       {
         property: 'og:type',
@@ -269,23 +267,46 @@ export class ExtentComponent implements OnInit {
       },
       {
         property: 'og:url',
-        content: this.sharedService.baseUrl + cdbName
+        content: this.sharedService.baseUrl + this.currentExtent.name
       },
-      // {
-      //   property: 'og:image',
-      //   content: ''
-      // },
       {
         property: 'og:description',
-        content: cdbName + ' CDB in Cesium'
+        content: this.currentExtent.name + ' CDB in Cesium'
       },
       {
         property: 'og:site_name',
         content: this.sharedService.cdbTitle
       }
     ]);
+  }
+
+  createCesiumCDBBorders(){
+
+    const baseExtent: any = new AcEntity({
+      hierarchy: Cesium.Cartesian3.fromDegreesArray([this.currentExtent.baseExtents.x1, this.currentExtent.baseExtents.y1,
+        this.currentExtent.baseExtents.x2, this.currentExtent.baseExtents.y1,
+        this.currentExtent.baseExtents.x2, this.currentExtent.baseExtents.y2 ,
+        this.currentExtent.baseExtents.x1, this.currentExtent.baseExtents.y2 ]),
+      outline: true,
+      outlineColor: Cesium.Color.ORANGE,
+      fill: false,
+      outlineWidth: 1,
+    });
+
+    this.polygons$ = observableFrom([
+      {
+        id: this.entiyCounter.toString(),
+        entity: baseExtent,
+        actionType: ActionType.ADD_UPDATE
+      }
+    ]).pipe(merge(this.updater));
+  }
+
+  addCesiumEntities() {
 
   }
+
+
 
     getLevel = (node: TodoItemFlatNode) => node.level;
 
@@ -302,7 +323,6 @@ export class ExtentComponent implements OnInit {
   /**
    * Transformer to convert nested node to flat node. Record the nodes in maps for later use.
    */
-
   transformer = (node: TodoItemNode, level: number) => {
     const existingNode = this.nestedNodeMap.get(node);
     const flatNode = existingNode && existingNode.item === node.item
@@ -362,38 +382,45 @@ export class ExtentComponent implements OnInit {
       this.checkRootNodeSelection(parent);
       parent = this.getParentNode(parent);
     }
+
     const oldFeatures: Feature[] = this.currentFeatures;
 
-    this.currentFeatures = this.getFeatures(this.checklistSelection.selected.filter(a => a.level === 3));
+    this.service.getFeatures(this.checklistSelection.selected.filter(a => a.level === 3))
+    .subscribe(
+      features => this.currentFeatures = features
+    );
 
     this.updateCesium(oldFeatures);
   }
 
   updateCesium(oldFeatures: Feature[]) {
 
-    const indexesArray = [];
+    console.log(this.currentFeatures);
+    console.log(oldFeatures);
+
+    const indexArray = [];
+    const lastIndex =  this.cesiumViewer.dataSources.length - oldFeatures.length;
     oldFeatures.forEach(feature => {
       if (!this.currentFeatures.includes(feature)) {
-        indexesArray.unshift(oldFeatures.indexOf(feature));
+        indexArray.unshift(oldFeatures.indexOf(feature) + lastIndex);
       }
     });
 
-    indexesArray.forEach(index => {
-      this.viewer.dataSources.remove(this.viewer.dataSources.get(index));
-    });
+    indexArray.forEach(index =>
+      {
+        this.cesiumViewer.dataSources.remove(this.cesiumViewer.dataSources
+          .get(index), true);
+      });
+    
 
-    // Working !
-    // this.viewer.dataSources.removeAll(true);
 
-    Cesium.Math.setRandomNumberSeed(3);
 
     this.currentFeatures.forEach(feature => {
-
-     const lod = parseInt(feature.properties.Lod_Level.split('L')[1]);
+     Cesium.Math.setRandomNumberSeed(3);
+     const lod = parseInt(feature.properties.Lod_Level.split('L')[1],0);
 
      if (!oldFeatures.includes(feature)) {
         const datasourse = Cesium.GeoJsonDataSource.load(feature, {
-
           stroke: Cesium.Color.fromRandom({
               alpha: 0.5
           }),
@@ -404,30 +431,11 @@ export class ExtentComponent implements OnInit {
           markerColor: Cesium.Color.fromRandom({
             alpha: 0.5
           })
-
       });
-        this.viewer.dataSources.add(datasourse);
+         this.cesiumViewer.dataSources.add(datasourse);
       }
-
-    //  this.viewer.dataSources._dataSources.forEach( source =>  {
-    //   console.log(source);
-    //   let lod = source.entities._entities.values[0]._properties._Lod_Level._value.split('L')[1];
-
-    //   if (lod.includes('C')) {
-    //       lod = -1 * parseInt(lod.split('C')[1]);
-    //   }
-
-    //   const height =  (parseInt(lod) * 10 );
-
-    //   source.entities._entities.values.forEach(value => {
-
-    //       value.polygon.height._value = height;
-
-    //   });
-
-    // });
-
   });
+    console.log(this.cesiumViewer.dataSources);
   }
 
   // Gets the root node (Extents)
@@ -465,46 +473,7 @@ export class ExtentComponent implements OnInit {
     return null;
   }
 
-  getFeatures(selected: TodoItemFlatNode[]): Feature[] {
 
-    // Scenario one
-
-    const featuresList: Feature[] = [];
-
-    // selected.forEach(item => {
-    //   this.currentDatasets.forEach(dataset => {
-    //     const component = dataset.components.filter(x => x.key === item.parent && x.lodLevel === item.item)[0];
-    //     if (component !== undefined) {
-    //       featuresList.push(component.feature);
-    //     }
-    //   });
-    // });
-    // return featuresList;
-
-    // Scenario two
-
-    selected.forEach(item => {
-      console.log(this.testExtent);
-      this.testExtent.features.filter(x => x.properties.component_key === item.parent && x.properties.Lod_Level === item.item)
-      .forEach(feature => {
-          featuresList.push(feature);
-        });
-    });
-    return featuresList;
-  }
-
-  // /** Select the category so we can insert the new item. */
-  // addNewItem(node: TodoItemFlatNode) {
-  //   const parentNode = this.flatNodeMap.get(node);
-  //   this._database.insertItem(parentNode!, '');
-  //   this.treeControl.expand(node);
-  // }
-
-  // /** Save the node to database */
-  // saveNode(node: TodoItemFlatNode, itemValue: string) {
-  //   const nestedNode = this.flatNodeMap.get(node);
-  //   this._database.updateItem(nestedNode!, itemValue);
-  // }
 
 
 }

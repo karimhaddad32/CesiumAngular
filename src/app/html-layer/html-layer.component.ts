@@ -13,44 +13,19 @@ import { AcLayerComponent, AcNotification, ActionType, CameraService, ViewerConf
   // tslint:disable-next-line: component-selector
   selector: 'html-layer',
   templateUrl: './html-layer.component.html',
-  styleUrls: ['./html-layer.component.scss'],
-  providers: [ChecklistDatabase]
+  styleUrls: ['./html-layer.component.scss']
 })
 export class HtmlLayerComponent implements OnInit {
 
   @ViewChild(AcLayerComponent) layer: AcLayerComponent;
-  
-  @ViewChild('contentMenu') private contentMenu: ElementRef;
+
+  @ViewChild("contentMenu") contentMenu: ElementRef;
 
   htmls$: Observable<AcNotification>;
-
-  // Template
-  html1 = {
-    id: '0',
-    actionType: ActionType.ADD_UPDATE,
-    entity: {
-      id: '0',
-      show: true,
-      name: 'Html 1',
-      position: Cesium.Cartesian3.fromDegrees(-100, 30),
-      color: Cesium.Color.RED
-    },
-  };
-  html2 = {
-    id: '1',
-    actionType: ActionType.ADD_UPDATE,
-    entity: {
-      id: '1',
-      show: true,
-      name: 'Html 2',
-      position: Cesium.Cartesian3.fromDegrees(-100, 45),
-      color: Cesium.Color.RED
-    }
-  };
-
   htmlArray: any[];
   extents: Extent[];
   datasets: any;
+  
   constructor(
     private app: AppComponent,
     private extentService: ExtentService,
@@ -73,7 +48,6 @@ export class HtmlLayerComponent implements OnInit {
     this.extentService
     .getExtents()
     .subscribe(extents => (this.extents = extents));
-    console.log(this.extents);
   }
 
   createHtmls(): any[] {
@@ -95,6 +69,8 @@ export class HtmlLayerComponent implements OnInit {
         }});
         counter++;
     });
+
+
     return this.htmlArray;
   }
 
@@ -102,12 +78,10 @@ export class HtmlLayerComponent implements OnInit {
     this.htmlArray = this.createHtmls();
     this.htmls$ = from(this.htmlArray);
     console.log(this.htmlArray);
-
   }
 
   zoomToLocation(cdbName: string) {
-    // this.camera.flyTo(html.entity.position);
-    // this.layer.remove(html.id);
+
     const selected: Extent = this.extents.filter(x => x.name === cdbName)[0];
     this.camera.cameraFlyTo({
       destination : Cesium.Cartesian3.fromDegrees(
@@ -122,7 +96,7 @@ export class HtmlLayerComponent implements OnInit {
     });
 
     this.getDatasets(selected);
-    this.updateHtml()
+    this.createDatasetList()
   }
 
   getDatasets(extent: Extent): void {
@@ -134,18 +108,9 @@ export class HtmlLayerComponent implements OnInit {
   }
 
 
-  updateHtml() {
+  createDatasetList() {
 
-    // if (this.html1) {
-    //   this.html1.entity.name = 'Work!';
-    //   this.layer.update(this.html1.entity, this.html1.id);
-    // }
-
-    // this.html2.entity.name = 'Great!!!!';
-    // this.html2.entity.position = Cesium.Cartesian3.fromDegrees(-100, 60);
-    // this.layer.update(this.html2.entity, this.html2.id);
-
-    const htmlString = 'hello'
+    const htmlString = 'asd';
 
     console.log(this.datasets);
 
@@ -153,30 +118,7 @@ export class HtmlLayerComponent implements OnInit {
     this.datasets.key().forEach(dataset => {
       console.log(dataset);
     });
-
-    
-
-    
-
-
   }
 
-
-
-  pixelOffset(value) {
-    return new Cesium.Cartesian2(value[0], value[1]);
-  }
-
-  removeFirst() {
-    this.layer.remove('0');
-    this.html1 = null;
-  }
-
-  toggleShow() {
-    if (this.html1) {
-      this.html1.entity.show = !this.html1.entity.show;
-      this.layer.update(this.html1.entity, this.html1.id);
-    }
-  }
 }
 

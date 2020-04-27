@@ -8,6 +8,9 @@ import { ExtentComponent } from './extent/extent.component';
 
 const routes: Routes = [
   {
+    path: '', component: MainPageComponent
+  },
+  {
     path: 'main_page', component: MainPageComponent
   },
   {
@@ -16,9 +19,6 @@ const routes: Routes = [
   // For page not found
   {
     path: '404', component: NotFoundComponent
-  },
-  {
-    path: '', component: MainPageComponent
   },
   {
     path: ':name', component: ExtentComponent

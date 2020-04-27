@@ -1,4 +1,4 @@
-<ac-layer acFor="let html of htmls$" [context]="this">
+<!-- <ac-layer acFor="let html of htmls$" [context]="this">
   <ac-html-desc props="{position: html.position, show: html.show}">
     <ng-template let-html>
       <div class="contianer">
@@ -6,11 +6,16 @@
       </div>
     </ng-template>
   </ac-html-desc>
-</ac-layer>
-<ac-camera></ac-camera>
+</ac-layer> -->
+
+<!-- <div class="content-menu" #contentMenu>
+  <ul>
+    <li *ngFor="let cdb of extents" routerLink='{{cdb.name}}' (click)="zoomToLocation(cdb.name)" class="list-item">{{cdb.name}}</li>
+  </ul>
+</div> -->
 
 <div class="content-menu" #contentMenu>
-    <ul>
-      <li *ngFor="let cdb of extents" routerLink='/{{cdb.name}}' (click)="zoomToLocation(cdb.name)" class="list-item">{{cdb.name}}</li>
-    </ul> 
+  <ul>
+    <li *ngFor="let cdb of extents" routerLink='{{cdb.name}}' class="list-item">{{cdb.name}}</li>
+  </ul>
 </div>
