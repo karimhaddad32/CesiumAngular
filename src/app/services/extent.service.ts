@@ -6,11 +6,11 @@ import { EXTENTS } from './../mock-extents';
 import { Observable, of } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { TodoItemFlatNode } from '../extent/extent.component';
-import { get } from 'http';
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class ExtentService {
 
 private extents: Extent[];
@@ -62,9 +62,10 @@ constructor(private http: HttpClient) {
 serverUrl = '';
 // Returns only availabe CDBs and their info
   getExtents(): Observable<Extent[]> {
-    // Tempo
+    // Temporary
     // const extents: Extent[] = EXTENTS;
     return of(this.extents);
+
     // Rest API call from the web server.
     return this.http.get<Extent[]>(this.serverUrl);
   }
@@ -98,6 +99,9 @@ serverUrl = '';
       this._selectedExtent = undefined;
       this.selectedExtent = null;
     }
+
+    //
+
     console.log(datasetsObject);
     return of(datasetsObject);
   }
@@ -105,7 +109,6 @@ serverUrl = '';
   getFeatures(checkedItems: TodoItemFlatNode[]): Observable<Feature[]>
   {
     const featuresList: Feature[] = [];
-
     checkedItems.forEach(item => {
       const feature = this.selectedExtent.features.filter(x => x.properties.component === item.parent
         && x.properties.Lod_Level === item.item)[0]
