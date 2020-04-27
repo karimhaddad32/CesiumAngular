@@ -75,9 +75,9 @@ serverUrl = '';
     // HTML Inside
     console.log(this.extents);
     const extents = this.extents.filter(a => a.name === name);
-    const datasetsObject = {};
-    if (extents.length > 0) {
+    let datasetsObject = {};
 
+    try {
       this.selectedExtent = this.extents.filter(a => a.name === name)[0];
       this.selectedExtent.features = EXTENTS.filter(x => x.name === name)[0].features;
 
@@ -95,12 +95,12 @@ serverUrl = '';
           datasetsObject[properties.data_set][properties.component].push(properties.Lod_Level);
         }
       });
-    } else {
+    } catch (error) {
       this._selectedExtent = undefined;
       this.selectedExtent = null;
+      datasetsObject = null;
     }
-
-    //
+ 
 
     console.log(datasetsObject);
     return of(datasetsObject);

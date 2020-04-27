@@ -2,7 +2,7 @@
     <ac-html-desc props="{position: html.position, show: html.show}">
       <ng-template let-html>
         <div class="contianer">
-          <button routerLink='/{{html.name}}' (click)="zoomToLocation(html.name)">{{html.name}}</button>
+          <button routerLink='/{{html.name}}' (click)="removeButtons(html.name)">{{html.name}}</button>
         </div>
       </ng-template>
     </ac-html-desc>
@@ -10,28 +10,6 @@
 
 <div class="content-menu" id="content-menu" #contentMenu>
     <ul>
-      <li *ngFor="let cdb of extents" routerLink='/{{cdb.name}}' (click)="zoomToLocation(cdb.name)" class="list-item">{{cdb.name}}</li>
+      <li *ngFor="let cdb of extents" routerLink='/{{cdb.name}}' (click)="removeButtons(cdb.name)" class="list-item">{{cdb.name}}</li>
     </ul>
 </div>
-
-
-<!-- <div class="cdb-list">
-    <div *ngFor="let extent of extents">
-        <div class="card" routerLink='/{{extent.name}}' (click)= "getDatasets(extent)" style="cursor:pointer;">
-            <div class="card-title">
-                <h3>
-                    {{extent.name}}
-                </h3>
-            </div>
-            <div>
-                <div class="extent-info">
-                    <p>
-                        Location:<br />{{extent.coordinate.y}},{{extent.coordinate.x}}
-                    </p>
-                </div>           
-            </div>
-        </div>
-    </div>
-</div>
-
- -->

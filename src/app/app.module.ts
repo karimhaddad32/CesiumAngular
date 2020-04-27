@@ -1,17 +1,12 @@
 import { MapComponent } from './map.component';
 import { FooterComponent } from './footer/footer.component';
-import { TestPageComponent } from './test-page/test-page.component';
-import { SideBarComponent } from './side-bar/side-bar.component';
 import { MainPageComponent } from './main-page/main-page.component';
-import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
-import { CesiumComponent } from './cesium/cesium.component';
 import { HttpClientModule } from '@angular/common/http';
-import { PresagisCDBsComponent } from './presagis-cdbs/presagis-cdbs.component';
 import { ExtentComponent } from './extent/extent.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 
@@ -58,7 +53,6 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatTreeModule} from '@angular/material/tree';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import {AngularCesiumModule} from 'angular-cesium';
-import { HtmlLayerComponent } from './html-layer/html-layer.component';
 
 
 
@@ -66,16 +60,10 @@ import { HtmlLayerComponent } from './html-layer/html-layer.component';
 @NgModule({
    declarations: [
       AppComponent,
-      CesiumComponent,
-      PresagisCDBsComponent,
-      NavBarComponent,
       MainPageComponent,
-      SideBarComponent,
-      TestPageComponent,
       FooterComponent,
       ExtentComponent,
       NotFoundComponent,
-      HtmlLayerComponent,
       MapComponent
    ],
    imports: [

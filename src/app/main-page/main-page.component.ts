@@ -5,7 +5,7 @@ import { ExtentService } from './../services/extent.service';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Extent } from '../classes/extent';
 import { Title } from '@angular/platform-browser';
-import { AcLayerComponent } from 'angular-cesium';
+import { AcLayerComponent, MapsManagerService } from 'angular-cesium';
 import { from, from as observableFrom, Observable, Subject,of } from 'rxjs';
 import { AfterViewInit } from '@angular/core';
 import {  AcNotification, ActionType, CameraService, ViewerConfiguration } from 'angular-cesium';
@@ -49,22 +49,24 @@ export class MainPageComponent implements OnInit {
   extents: Extent[];
   datasets: any;
   viewer: any;
+  cesiumViewer;
 
   constructor(
     private app: AppComponent,
     private extentService: ExtentService,
     private titleService: Title,
     private sharedService: SharedService,
-    private camera: CameraService
+    private camera: CameraService,
+    private mapsManagerService: MapsManagerService
     ) {
       this.getExtents();
       this.setLocationsOnMap();
+      this.cesiumViewer = mapsManagerService.getMap().getCesiumViewer();
     }
 
   title = 'Home';
 
   ngOnInit() {
-
     this.titleService.setTitle(`${this.title} - ${this.sharedService.cdbTitle}`);
   }
 
@@ -105,40 +107,11 @@ export class MainPageComponent implements OnInit {
     console.log(this.htmlArray);
   }
 
-  zoomToLocation(cdbName: string) {
+  removeButtons(cdbName: string) {
     this.htmlArray.forEach(index => {
       this.layer.remove(index.id);
       index = null;
     });
     this.extentService.selectedExtent = this.extents.filter(x => x.name === cdbName)[0];
   }
-
-  // getDatasets(extent: Extent): void {
-  //   this.extentService.selectedExtent = extent;
-  //   this.extentService.getCDBDatasets(extent.name).subscribe(datasets =>
-  //     (this.datasets = datasets)
-  //     );
-  //   console.log(this.datasets);
-  // }
-
-
-  // createDatasetList() {
-  //   const htmlString = 'asd';
-
-  //   console.log(this.datasets);
-
-  //   this.contentMenu.nativeElement.innerHTML = htmlString;
-  //   this.datasets.key().forEach(dataset => {
-  //     console.log(dataset);
-  //   });
-  // }
-
-
-  // toggleShow() {
-  //   if (this.html1) {
-  //     this.html1.entity.show = !this.html1.entity.show;
-  //     this.layer.update(this.html1.entity, this.html1.id);
-  //   }
-  // }
-
 }

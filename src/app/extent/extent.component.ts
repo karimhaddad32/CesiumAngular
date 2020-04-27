@@ -47,7 +47,7 @@ export class ChecklistDatabase {
   get data(): TodoItemNode[] { return this.dataChange.value; }
   public datasets: Dataset[];
   public datasetsTree: {};
-  public testExtent: Extent;
+  public extentData: Extent;
   // ActivatedRoute to get the extension in the URL
   // ExtentService to get the data of the provided extension
   // Router to redirect in case of no response
@@ -67,13 +67,14 @@ export class ChecklistDatabase {
     this.route.params.subscribe(params => {
 
       this.extentService.getCDBDatasets(params.name).subscribe(extent => {
-        if (extent === undefined) {
+        if (extent === null) {
               this.router.navigateByUrl('404');
               return;
             }
-        this.testExtent = extent;
 
-        const data = this.buildFileTree({Extents: this.testExtent}, 0, '');
+        this.extentData = extent;
+
+        const data = this.buildFileTree({Extents: this.extentData}, 0, '');
 
         // Notify the change.
         this.dataChange.next(data);
@@ -231,15 +232,12 @@ export class ExtentComponent implements OnInit {
   ngOnInit(): void {
     this.currentFeatures = [];
 
-    for (let index = 0; index < this.cesiumViewer.dataSources.length; index++) {
-      const element = this.cesiumViewer.dataSources.get(index);
-      this.cesiumViewer.dataSources.remove(element)
-    }
-
     console.log(this.cesiumViewer.dataSources);
 
     this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
-    this.service.getCDBDatasets(this.currentExtent.name).subscribe(datasets => this.cdbDatasets = datasets);
+    if( this.currentExtent !== undefined){
+      this.service.getCDBDatasets(this.currentExtent.name).subscribe(datasets => this.cdbDatasets = datasets);
+    }
 
     this.camera.cameraFlyTo({
       destination : Cesium.Cartesian3.fromDegrees(
@@ -301,12 +299,6 @@ export class ExtentComponent implements OnInit {
       }
     ]).pipe(merge(this.updater));
   }
-
-  addCesiumEntities() {
-
-  }
-
-
 
     getLevel = (node: TodoItemFlatNode) => node.level;
 
@@ -411,9 +403,6 @@ export class ExtentComponent implements OnInit {
         this.cesiumViewer.dataSources.remove(this.cesiumViewer.dataSources
           .get(index), true);
       });
-    
-
-
 
     this.currentFeatures.forEach(feature => {
      Cesium.Math.setRandomNumberSeed(3);
@@ -436,6 +425,20 @@ export class ExtentComponent implements OnInit {
       }
   });
     console.log(this.cesiumViewer.dataSources);
+  }
+
+  resetViewer(){
+    const indexArray = [];
+    const lastIndex =  this.cesiumViewer.dataSources.length - this.currentFeatures.length;
+    this.currentFeatures.forEach(feature => {
+        indexArray.unshift(this.currentFeatures.indexOf(feature) + lastIndex);
+    });
+
+    indexArray.forEach(index =>
+      {
+        this.cesiumViewer.dataSources.remove(this.cesiumViewer.dataSources
+          .get(index), true);
+      });
   }
 
   // Gets the root node (Extents)

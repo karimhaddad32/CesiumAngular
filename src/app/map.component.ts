@@ -21,7 +21,7 @@ export class MapComponent  {
 
     // viewerOptions will be passed the Cesium.Viewer contstuctor 
     viewerConf.viewerOptions = {
-      sceneMode: SceneMode.SCENE3D,
+      sceneMode: SceneMode.SCENE2D,
       selectionIndicator: false,
       timeline: false,
       infoBox: false,
@@ -37,7 +37,7 @@ export class MapComponent  {
 
     // Will be called on viewer initialistion   
     viewerConf.viewerModifier = (viewer: any) => {
-      // Remove default double click zoom behaviour  
+      // Remove default double click zoom behaviour
       viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
     };
   }

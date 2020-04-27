@@ -16,7 +16,7 @@
 </ac-layer>
 
 <div class="content-menu" id="content-menu">
-  <h3 routerLink='/' style="text-align: center; cursor: pointer;">{{currentExtent.name}}</h3>
+  <h3 routerLink='/' (click)="resetViewer()" style="text-align: center; cursor: pointer;">{{currentExtent.name}}</h3>
   <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
     <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle matTreeNodePadding>
       <button mat-icon-button disabled></button>
