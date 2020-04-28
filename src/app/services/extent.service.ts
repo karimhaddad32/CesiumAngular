@@ -81,7 +81,7 @@ serverUrl = '';
       this.selectedExtent = this.extents.filter(a => a.name === name)[0];
       this.selectedExtent.features = EXTENTS.filter(x => x.name === name)[0].features;
 
-      this._selectedExtent.features.forEach(dataset => {
+      this.selectedExtent.features.forEach(dataset => {
         const properties = dataset.properties;
         if(!(properties.data_set in datasetsObject)){
           datasetsObject[properties.data_set] = {};

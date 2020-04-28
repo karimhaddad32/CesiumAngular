@@ -48,12 +48,8 @@ export class ChecklistDatabase {
   public datasets: Dataset[];
   public datasetsTree: {};
   public extentData: Extent;
-  // ActivatedRoute to get the extension in the URL
-  // ExtentService to get the data of the provided extension
-  // Router to redirect in case of no response
-  // SharedService is for the page titles
-  // Title is to access the page title.
-  // Meta is to change the meta tags of the website.
+  public raster_files: string[] = ['001_Elevation', '004_Imagery', '005_RMTexture', '900_ExtImagery', '002_MinMaxElevation'];
+
   constructor(
     private route: ActivatedRoute,
     private extentService: ExtentService,
@@ -67,6 +63,7 @@ export class ChecklistDatabase {
     this.route.params.subscribe(params => {
 
       this.extentService.getCDBDatasets(params.name).subscribe(extent => {
+
         if (extent === null) {
               this.router.navigateByUrl('404');
               return;
@@ -141,14 +138,6 @@ export class ChecklistDatabase {
       return accumulator.concat(node);
     }, []);
   }
-
-  // /** Add an item to to-do list */
-  // insertItem(parent: TodoItemNode, name: string) {
-  //   if (parent.children) {
-  //     parent.children.push({item: name} as TodoItemNode);
-  //     this.dataChange.next(this.data);
-  //   }
-  // }
 
   updateItem(node: TodoItemNode, name: string) {
     node.item = name;
