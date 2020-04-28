@@ -16,6 +16,7 @@ export class ExtentService {
 private extents: Extent[];
 private _selectedExtent: Extent;
   oldFeaturesList: Feature[];
+public rasterDatasets = ['001_Elevation', '004_Imagery', '005_RMTexture', '900_ExtImagery', '002_MinMaxElevation'];
 
 constructor(private http: HttpClient) {
 
@@ -75,34 +76,84 @@ serverUrl = '';
     // HTML Inside
     console.log(this.extents);
     const extents = this.extents.filter(a => a.name === name);
-    let datasetsObject = {};
 
-    try {
-      this.selectedExtent = this.extents.filter(a => a.name === name)[0];
-      this.selectedExtent.features = EXTENTS.filter(x => x.name === name)[0].features;
+    const datasetsObject = {};
 
-      this.selectedExtent.features.forEach(dataset => {
-        const properties = dataset.properties;
-        if(!(properties.data_set in datasetsObject)){
-          datasetsObject[properties.data_set] = {};
+    // try {
+    //   this.selectedExtent = this.extents.filter(a => a.name === name)[0];
+    //   this.selectedExtent.features = EXTENTS.filter(x => x.name === name)[0].features;
+
+    //   this.selectedExtent.features.forEach(dataset => {
+    //     const properties = dataset.properties;
+    //     if(!(properties.data_set in datasetsObject)){
+    //       datasetsObject[properties.data_set] = {};
+    //     }
+
+    //     if(this.rasterDatasets.includes(properties.data_set)){
+    //       if(!(properties.component in datasetsObject[properties.data_set])){
+    //         datasetsObject[properties.data_set][properties.component] = []
+    //       }
+    //     }else{
+    //       if(!(properties.component in datasetsObject[properties.data_set])){
+    //         datasetsObject[properties.data_set][properties.component] = properties.component + ' ' + properties.features_count;
+
+    //       }else{
+    //          const stringArray: string[] = datasetsObject[properties.data_set][properties.component]
+    //          .split(' ')
+    //          const featureCount = parseInt(stringArray[stringArray.length - 1], 10) + properties.features_count;
+    //          datasetsObject[properties.data_set][properties.component] = properties.component  + ' ' + featureCount;
+    //       }
+    //     }
+
+    //     if(this.rasterDatasets.includes(properties.data_set)){
+    //       if(!datasetsObject[properties.data_set][properties.component].includes(properties.Lod_Level)){
+    //         datasetsObject[properties.data_set][properties.component].push(properties.Lod_Level);
+    //       }
+    //     }
+
+    //   });
+    // } catch (error) {
+    //   this._selectedExtent = undefined;
+    //   this.selectedExtent = null;
+    //   datasetsObject = null;
+    // }
+
+    this.selectedExtent = this.extents.filter(a => a.name === name)[0];
+    this.selectedExtent.features = EXTENTS.filter(x => x.name === name)[0].features;
+
+    this.selectedExtent.features.forEach(dataset => {
+      const properties = dataset.properties;
+
+      if(!(properties.data_set in datasetsObject)){
+        datasetsObject[properties.data_set] = {
+          total_features_count: properties.features_count
+        };
+      }else{
+        datasetsObject[properties.data_set].total_features_count += properties.features_count;
+      }
+
+      let lod =0;
+
+      if (properties.Lod_Level.includes('LC')){
+        lod = -1* parseInt(properties.Lod_Level.split('LC')[1], 10);
+      }else{
+        lod = parseInt(properties.Lod_Level.split('L')[1],10);
+      }
+
+      if(!(properties.component in datasetsObject[properties.data_set])){
+        datasetsObject[properties.data_set][properties.component] = {
+          lods: [properties.Lod_Level],
+          lod_range: [lod],
+          features_count: properties.features_count
         }
+      }else
+      {
+        datasetsObject[properties.data_set][properties.component].lods.push(properties.Lod_Level);
+        datasetsObject[properties.data_set][properties.component].lod_range.push(lod);
+        datasetsObject[properties.data_set][properties.component].features_count += properties.features_count;
+      }
 
-        if(!(properties.component in datasetsObject[properties.data_set])){
-          datasetsObject[properties.data_set][properties.component] = []
-        }
-
-        if(!datasetsObject[properties.data_set][properties.component].includes(properties.Lod_Level)){
-          datasetsObject[properties.data_set][properties.component].push(properties.Lod_Level);
-        }
-      });
-    } catch (error) {
-      this._selectedExtent = undefined;
-      this.selectedExtent = null;
-      datasetsObject = null;
-    }
- 
-
-    console.log(datasetsObject);
+    });
     return of(datasetsObject);
   }
 
@@ -110,9 +161,18 @@ serverUrl = '';
   {
     const featuresList: Feature[] = [];
     checkedItems.forEach(item => {
-      const feature = this.selectedExtent.features.filter(x => x.properties.component === item.parent
-        && x.properties.Lod_Level === item.item)[0]
-      featuresList.push(feature);
+      if(item.level === 3){
+        const feature = this.selectedExtent.features.filter(x => x.properties.component === item.parent
+          && x.properties.Lod_Level === item.item)[0]
+        featuresList.push(feature);
+      }
+      else{
+        const feature = this.selectedExtent.features.filter(x => x.properties.data_set === item.item
+         ).sort((a, b) => (a.properties.Lod_Level.localeCompare(b.properties.Lod_Level)))[0]
+        featuresList.push(feature);
+
+        console.log(feature);
+      }
     });
     return of(featuresList);
   }

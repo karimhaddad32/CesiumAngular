@@ -25,6 +25,8 @@ export class TodoItemNode {
   children: TodoItemNode[];
   item: string;
   parent: string;
+  features_count: number;
+  lod_range: number[];
 }
 
 /** Flat list item node with expandable and level information */
@@ -33,6 +35,8 @@ export class TodoItemFlatNode {
   level: number;
   expandable: boolean;
   parent: string;
+  features_count: number;
+  lod_range: number[];
 }
 
 /**
@@ -48,7 +52,6 @@ export class ChecklistDatabase {
   public datasets: Dataset[];
   public datasetsTree: {};
   public extentData: Extent;
-  public raster_files: string[] = ['001_Elevation', '004_Imagery', '005_RMTexture', '900_ExtImagery', '002_MinMaxElevation'];
 
   constructor(
     private route: ActivatedRoute,
@@ -71,7 +74,7 @@ export class ChecklistDatabase {
 
         this.extentData = extent;
 
-        const data = this.buildFileTree({Extents: this.extentData}, 0, '');
+        const data = this.buildFileTree({Extents: this.extentData});
 
         // Notify the change.
         this.dataChange.next(data);
@@ -82,6 +85,7 @@ export class ChecklistDatabase {
 
   }
 
+ 
   sortByProperty(property: string) {
     return (a, b) => {
        if (a[property] > b[property]) {
@@ -98,46 +102,131 @@ export class ChecklistDatabase {
    * Build the file structure tree. The `value` is the Json object, or a sub-tree of a Json object.
    * The return value is the list of `TodoItemNode`.
    */
-  buildFileTree(obj: {[key: string]: any}, level: number, parent: string): TodoItemNode[] {
-    return Object.keys(obj).reduce<TodoItemNode[]>((accumulator, key) => {
-      const value = obj[key];
-      const node = new TodoItemNode();
-      let newVal: any[] = null;
 
-      if (key.split('.').length > 1 ) {
-        node.item = key.split('.')[1];
-      } else {
-        node.item = key;
+  // buildFileTree(obj: {[key: string]: any}, level: number, parent: string,
+  //    features_count: number = null, lod_range: number[] = []): TodoItemNode[] {
+
+  //   return Object.keys(obj).reduce<TodoItemNode[]>((accumulator, key) => {
+      
+  //     const value = obj[key];
+  //     const node = new TodoItemNode();
+  //     let newVal: any[] = null;
+
+  //     if (key.split('.').length > 1 ) {
+  //       node.item = key.split('.')[1];
+  //     } else {
+  //       node.item = key;
+  //     }
+
+  //     node.features_count = 0;
+  //     node.lod_range = [];
+
+  //     node.parent = parent;
+
+  //     if (value != null) {
+  //       if (Array.isArray(value)){
+  //         console.log(value);
+  //         newVal = value.filter(x => x.indexOf('LC') < 0)
+  //         if (newVal.length === 0){
+  //           const lowestLod = value.filter(x => x.indexOf('LC') >= 0).pop();
+  //           newVal.unshift(lowestLod)
+  //         }
+  //       }
+
+  //       if (typeof value === 'object') {
+  //         if (key.split('.').length > 1 ) {
+  //           node.children = this.buildFileTree(value, level + 1, key.split('.')[0]);
+  //         } else {
+  //           if (newVal != null){
+  //             node.children = this.buildFileTree(newVal, level + 1, node.item);
+  //           }else{
+  //             node.children = this.buildFileTree(value, level + 1, node.item);
+  //           }
+  //         }
+  //       } else {
+  //         node.item = value;
+  //       }
+  //     }
+
+  //     return accumulator.concat(node);
+  //   }, []);
+  // }
+
+  buildFileTree(exntetsData: any): TodoItemNode[] {
+
+    let checkList : TodoItemNode[] = [];
+
+    const rasterDatasets = ['001_Elevation', '004_Imagery', '005_RMTexture', '900_ExtImagery', '002_MinMaxElevation'];
+
+    const rootNode = new TodoItemNode();
+
+    rootNode.item = 'Extents';
+    rootNode.parent = null;
+    rootNode.children = [];
+
+    Object.keys(this.extentData).forEach( dataset => {
+
+      const level1Node = new TodoItemNode(); 
+
+      const datasetDetails = this.extentData[dataset];
+
+      level1Node.item = dataset ;
+      level1Node.parent = rootNode.item;
+      level1Node.children = [];
+
+      if (rasterDatasets.includes(dataset)){
+        level1Node.features_count = 0;
+      }else{
+        level1Node.features_count = datasetDetails.total_features_count;
       }
 
-      node.parent = parent;
+      console.log(dataset);
 
-      if (value != null) {
-        if (Array.isArray(value)){
-          newVal = value.filter(x => x.indexOf('LC') < 0)
-          if (newVal.length === 0){
-            const lowestLod = value.filter(x => x.indexOf('LC') >= 0).pop();
-            newVal.unshift(lowestLod)
-          }
-        }
-        if (typeof value === 'object') {
-          if (key.split('.').length > 1 ) {
-            node.children = this.buildFileTree(value, level + 1, key.split('.')[0]);
-          } else {
-            if (newVal != null){
-              node.children = this.buildFileTree(newVal, level + 1, node.item);
+      Object.keys(datasetDetails).forEach(subDataset =>{
+        if (subDataset !== 'total_features_count'){
+
+          const level2Node = new TodoItemNode();
+          const subDatasetDetails = datasetDetails[subDataset];
+          
+          level2Node.item = subDataset;
+          level2Node.parent = level1Node.item;
+
+          if(rasterDatasets.includes(dataset)){
+
+            const lowestLod = Math.min.apply(null,subDatasetDetails.lod_range);
+            const highest = Math.max.apply(null,subDatasetDetails.lod_range);
+            level2Node.children = [];
+
+            if (highest >= 0 ){
+              subDatasetDetails.lods.forEach(lod => {
+                if(!lod.includes('LC')){
+                  const child = new TodoItemNode();
+                  child.item = lod;
+                  child.parent = level2Node.item;
+                  level2Node.children.push(child)
+                }
+              });
             }else{
-              node.children = this.buildFileTree(value, level + 1, node.item);
+              const child = new TodoItemNode();
+              child.item = 'LC' + Math.abs(lowestLod);
+              child.parent = level2Node.item;
+              level2Node.children.push(child)
             }
-          }
-        } else {
-          node.item = value;
-        }
-      }
 
-      return accumulator.concat(node);
-    }, []);
-  }
+          }else{
+            level2Node.features_count = subDatasetDetails.features_count;
+            level2Node.lod_range = [Math.min.apply(null,subDatasetDetails.lod_range), Math.max.apply(null,subDatasetDetails.lod_range)];
+          }
+          level1Node.children.push(level2Node);
+        }
+      });
+      rootNode.children.push(level1Node);
+    });
+
+    console.log(rootNode);
+
+     return [rootNode];
+ }
 
   updateItem(node: TodoItemNode, name: string) {
     node.item = name;
@@ -195,6 +284,8 @@ export class ExtentComponent implements OnInit {
   cesiumEntities : {} = {};
   entiyCounter = 0;
   cesiumViewer;
+  public rasterDatasets: string[] = ['001_Elevation', '004_Imagery', '005_RMTexture', '900_ExtImagery', '002_MinMaxElevation'];
+
 
   constructor(
     _database: ChecklistDatabase,
@@ -267,6 +358,22 @@ export class ExtentComponent implements OnInit {
     ]);
   }
 
+  isRasterSubDataset(node: TodoItemFlatNode){
+    if(node.level === 2){
+      return this.rasterDatasets.includes(node.parent);
+    }else{
+      return true;
+    }
+  }
+
+  isRasterDataset(node : TodoItemFlatNode){
+    if(node.level === 1){
+      return this.rasterDatasets.includes(node.item);
+    }else{
+      return true;
+    }
+  }
+
   createCesiumCDBBorders(){
 
     const baseExtent: any = new AcEntity({
@@ -313,6 +420,8 @@ export class ExtentComponent implements OnInit {
     flatNode.level = level;
     flatNode.expandable = !!node.children;
     flatNode.parent = node.parent;
+    flatNode.lod_range = node.lod_range;
+    flatNode.features_count = node.features_count;
     this.flatNodeMap.set(flatNode, node);
     this.nestedNodeMap.set(node, flatNode);
     return flatNode;
@@ -366,18 +475,20 @@ export class ExtentComponent implements OnInit {
 
     const oldFeatures: Feature[] = this.currentFeatures;
 
-    this.service.getFeatures(this.checklistSelection.selected.filter(a => a.level === 3))
+    this.service.getFeatures(this.checklistSelection.selected.filter(a => a.level === 3 || a.level === 1))
     .subscribe(
       features => this.currentFeatures = features
     );
+
+    // this.service.getFeatures(this.checklistSelection.selected.filter(a => a.level === 3))
+    // .subscribe(
+    //   features => this.currentFeatures = features
+    // );
 
     this.updateCesium(oldFeatures);
   }
 
   updateCesium(oldFeatures: Feature[]) {
-
-    console.log(this.currentFeatures);
-    console.log(oldFeatures);
 
     const indexArray = [];
     const lastIndex =  this.cesiumViewer.dataSources.length - oldFeatures.length;
@@ -413,7 +524,6 @@ export class ExtentComponent implements OnInit {
          this.cesiumViewer.dataSources.add(datasourse);
       }
   });
-    console.log(this.cesiumViewer.dataSources);
   }
 
   resetViewer(){

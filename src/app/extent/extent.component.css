@@ -3,7 +3,7 @@ mat-tree {
   background: transparent;
 }
 
-mat-tree mat-checkbox {
+mat-tree mat-checkbox, div {
   color: white;
 }
 
