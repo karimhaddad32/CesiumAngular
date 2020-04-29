@@ -85,7 +85,7 @@ export class ChecklistDatabase {
 
   }
 
- 
+
   sortByProperty(property: string) {
     return (a, b) => {
        if (a[property] > b[property]) {
@@ -97,64 +97,12 @@ export class ChecklistDatabase {
     };
  }
 
-
   /**
-   * Build the file structure tree. The `value` is the Json object, or a sub-tree of a Json object.
+   * Build the file structure tree.
    * The return value is the list of `TodoItemNode`.
    */
 
-  // buildFileTree(obj: {[key: string]: any}, level: number, parent: string,
-  //    features_count: number = null, lod_range: number[] = []): TodoItemNode[] {
-
-  //   return Object.keys(obj).reduce<TodoItemNode[]>((accumulator, key) => {
-      
-  //     const value = obj[key];
-  //     const node = new TodoItemNode();
-  //     let newVal: any[] = null;
-
-  //     if (key.split('.').length > 1 ) {
-  //       node.item = key.split('.')[1];
-  //     } else {
-  //       node.item = key;
-  //     }
-
-  //     node.features_count = 0;
-  //     node.lod_range = [];
-
-  //     node.parent = parent;
-
-  //     if (value != null) {
-  //       if (Array.isArray(value)){
-  //         console.log(value);
-  //         newVal = value.filter(x => x.indexOf('LC') < 0)
-  //         if (newVal.length === 0){
-  //           const lowestLod = value.filter(x => x.indexOf('LC') >= 0).pop();
-  //           newVal.unshift(lowestLod)
-  //         }
-  //       }
-
-  //       if (typeof value === 'object') {
-  //         if (key.split('.').length > 1 ) {
-  //           node.children = this.buildFileTree(value, level + 1, key.split('.')[0]);
-  //         } else {
-  //           if (newVal != null){
-  //             node.children = this.buildFileTree(newVal, level + 1, node.item);
-  //           }else{
-  //             node.children = this.buildFileTree(value, level + 1, node.item);
-  //           }
-  //         }
-  //       } else {
-  //         node.item = value;
-  //       }
-  //     }
-
-  //     return accumulator.concat(node);
-  //   }, []);
-  // }
-
   buildFileTree(exntetsData: any): TodoItemNode[] {
-
-    let checkList : TodoItemNode[] = [];
 
     const rasterDatasets = ['001_Elevation', '004_Imagery', '005_RMTexture', '900_ExtImagery', '002_MinMaxElevation'];
 
@@ -180,14 +128,12 @@ export class ChecklistDatabase {
         level1Node.features_count = datasetDetails.total_features_count;
       }
 
-      console.log(dataset);
-
       Object.keys(datasetDetails).forEach(subDataset =>{
         if (subDataset !== 'total_features_count'){
 
           const level2Node = new TodoItemNode();
           const subDatasetDetails = datasetDetails[subDataset];
-          
+
           level2Node.item = subDataset;
           level2Node.parent = level1Node.item;
 
@@ -222,8 +168,6 @@ export class ChecklistDatabase {
       });
       rootNode.children.push(level1Node);
     });
-
-    console.log(rootNode);
 
      return [rootNode];
  }
@@ -313,8 +257,6 @@ export class ExtentComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentFeatures = [];
-
-    console.log(this.cesiumViewer.dataSources);
 
     this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
 

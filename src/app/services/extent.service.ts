@@ -1,5 +1,4 @@
 import { Extent, Feature } from './../classes/extent';
-import { DATASETS } from './../mock-datasets';
 import { Dataset, CDBComponent } from './../classes/dataset';
 import { HttpClient } from '@angular/common/http';
 import { EXTENTS } from './../mock-extents';
@@ -71,7 +70,7 @@ serverUrl = '';
     return this.http.get<Extent[]>(this.serverUrl);
   }
 
-  //cdbName
+  // cdb Name
   getCDBDatasets(name: string): Observable<any>{
 
     const extents = this.extents.filter(a => a.name === name);

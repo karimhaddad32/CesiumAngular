@@ -21,30 +21,6 @@ export class MainPageComponent implements OnInit {
 
   htmls$: Observable<AcNotification>;
 
-  // Template
-  // html1 = {
-  //   id: '0',
-  //   actionType: ActionType.ADD_UPDATE,
-  //   entity: {
-  //     id: '0',
-  //     show: true,
-  //     name: 'Html 1',
-  //     position: Cesium.Cartesian3.fromDegrees(-100, 30),
-  //     color: Cesium.Color.RED
-  //   },
-  // };
-  // html2 = {
-  //   id: '1',
-  //   actionType: ActionType.ADD_UPDATE,
-  //   entity: {
-  //     id: '1',
-  //     show: true,
-  //     name: 'Html 2',
-  //     position: Cesium.Cartesian3.fromDegrees(-100, 45),
-  //     color: Cesium.Color.RED
-  //   }
-  // };
-
   htmlArray: any[];
   extents: Extent[];
   datasets: any;
@@ -81,7 +57,6 @@ export class MainPageComponent implements OnInit {
     this.htmlArray  = [];
     let counter = 0;
     this.extents.forEach(location => {
-      console.log(location);
       this.htmlArray.push({
         id: counter,
         actionType: ActionType.ADD_UPDATE,
@@ -104,7 +79,6 @@ export class MainPageComponent implements OnInit {
   setLocationsOnMap(){
     this.htmlArray = this.createHtmls();
     this.htmls$ = from(this.htmlArray);
-    console.log(this.htmlArray);
   }
 
   removeButtons(cdbName: string) {
