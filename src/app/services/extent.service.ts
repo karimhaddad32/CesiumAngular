@@ -71,52 +71,17 @@ serverUrl = '';
     return this.http.get<Extent[]>(this.serverUrl);
   }
 
+  //cdbName
   getCDBDatasets(name: string): Observable<any>{
 
-    // HTML Inside
-    console.log(this.extents);
     const extents = this.extents.filter(a => a.name === name);
+    if (extents.length === 0){
+      this.selectedExtent = undefined;
+      return undefined;
+    }
 
     const datasetsObject = {};
 
-    // try {
-    //   this.selectedExtent = this.extents.filter(a => a.name === name)[0];
-    //   this.selectedExtent.features = EXTENTS.filter(x => x.name === name)[0].features;
-
-    //   this.selectedExtent.features.forEach(dataset => {
-    //     const properties = dataset.properties;
-    //     if(!(properties.data_set in datasetsObject)){
-    //       datasetsObject[properties.data_set] = {};
-    //     }
-
-    //     if(this.rasterDatasets.includes(properties.data_set)){
-    //       if(!(properties.component in datasetsObject[properties.data_set])){
-    //         datasetsObject[properties.data_set][properties.component] = []
-    //       }
-    //     }else{
-    //       if(!(properties.component in datasetsObject[properties.data_set])){
-    //         datasetsObject[properties.data_set][properties.component] = properties.component + ' ' + properties.features_count;
-
-    //       }else{
-    //          const stringArray: string[] = datasetsObject[properties.data_set][properties.component]
-    //          .split(' ')
-    //          const featureCount = parseInt(stringArray[stringArray.length - 1], 10) + properties.features_count;
-    //          datasetsObject[properties.data_set][properties.component] = properties.component  + ' ' + featureCount;
-    //       }
-    //     }
-
-    //     if(this.rasterDatasets.includes(properties.data_set)){
-    //       if(!datasetsObject[properties.data_set][properties.component].includes(properties.Lod_Level)){
-    //         datasetsObject[properties.data_set][properties.component].push(properties.Lod_Level);
-    //       }
-    //     }
-
-    //   });
-    // } catch (error) {
-    //   this._selectedExtent = undefined;
-    //   this.selectedExtent = null;
-    //   datasetsObject = null;
-    // }
 
     this.selectedExtent = this.extents.filter(a => a.name === name)[0];
     this.selectedExtent.features = EXTENTS.filter(x => x.name === name)[0].features;
@@ -148,11 +113,12 @@ serverUrl = '';
         }
       }else
       {
-        datasetsObject[properties.data_set][properties.component].lods.push(properties.Lod_Level);
-        datasetsObject[properties.data_set][properties.component].lod_range.push(lod);
+        if(!datasetsObject[properties.data_set][properties.component].lod_range.includes(lod)){
+          datasetsObject[properties.data_set][properties.component].lods.push(properties.Lod_Level);
+          datasetsObject[properties.data_set][properties.component].lod_range.push(lod);
+        }
         datasetsObject[properties.data_set][properties.component].features_count += properties.features_count;
       }
-
     });
     return of(datasetsObject);
   }
@@ -170,8 +136,6 @@ serverUrl = '';
         const feature = this.selectedExtent.features.filter(x => x.properties.data_set === item.item
          ).sort((a, b) => (a.properties.Lod_Level.localeCompare(b.properties.Lod_Level)))[0]
         featuresList.push(feature);
-
-        console.log(feature);
       }
     });
     return of(featuresList);

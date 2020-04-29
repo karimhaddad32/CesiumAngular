@@ -295,7 +295,9 @@ export class ExtentComponent implements OnInit {
     private meta: Meta,
     private app: AppComponent,
     private camera: CameraService,
-    private mapsManagerService: MapsManagerService
+    private mapsManagerService: MapsManagerService,
+    private route: ActivatedRoute,
+    private router: Router
     ) {
       this.cesiumViewer = mapsManagerService.getMap().getCesiumViewer();
       this.treeFlattener = new MatTreeFlattener(this.transformer, this.getLevel,
@@ -315,9 +317,13 @@ export class ExtentComponent implements OnInit {
     console.log(this.cesiumViewer.dataSources);
 
     this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
-    if( this.currentExtent !== undefined){
-      this.service.getCDBDatasets(this.currentExtent.name).subscribe(datasets => this.cdbDatasets = datasets);
+
+    if(this.currentExtent === undefined){
+      this.router.navigateByUrl('404');
+      return;
     }
+
+    this.service.getCDBDatasets(this.currentExtent.name).subscribe(datasets => this.cdbDatasets = datasets);
 
     this.camera.cameraFlyTo({
       destination : Cesium.Cartesian3.fromDegrees(
@@ -356,6 +362,7 @@ export class ExtentComponent implements OnInit {
         content: this.sharedService.cdbTitle
       }
     ]);
+  
   }
 
   isRasterSubDataset(node: TodoItemFlatNode){
