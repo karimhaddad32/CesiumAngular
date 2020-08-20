@@ -87,10 +87,8 @@ import { APP_BASE_HREF } from '@angular/common';
       MainPageComponent,
       ExtentService,
       {
-         
          provide: APP_BASE_HREF,
          useValue: window['base-href']
-   
       }
    ],
    bootstrap: [
