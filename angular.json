@@ -29,7 +29,7 @@
               {
                 "glob": "**/*",
                 "input": "./node_modules/cesium/Build/Cesium",
-                "output": "./CesiumAngular/assets/cesium"
+                "output": "/assets/cesium"
               }
             ],
             "styles": [
