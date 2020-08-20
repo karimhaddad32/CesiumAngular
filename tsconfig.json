@@ -10,12 +10,12 @@
     "module": "esnext",
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "ES2020",
+    "target": "esnext",
     "typeRoots": [
       "node_modules/@types"
     ],
     "lib": [
-      "ES2020",
+      "esnext",
       "dom"
     ]
   },
