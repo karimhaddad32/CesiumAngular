@@ -15,7 +15,6 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "baseHref": "/CesiumAngular/",
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist",
@@ -62,7 +61,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "3mb",
+                  "maximumWarning": "2mb",
                   "maximumError": "5mb"
                 },
                 {
