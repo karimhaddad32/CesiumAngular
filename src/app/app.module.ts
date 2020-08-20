@@ -54,6 +54,7 @@ import {MatTreeModule} from '@angular/material/tree';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import {AngularCesiumModule} from 'angular-cesium';
 import { ExtentService } from './services/extent.service';
+import { APP_BASE_HREF } from '@angular/common';
 
 
 
@@ -84,7 +85,13 @@ import { ExtentService } from './services/extent.service';
    ],
    providers: [
       MainPageComponent,
-      ExtentService
+      ExtentService,
+      {
+         
+         provide: APP_BASE_HREF,
+         useValue: window['base-href']
+   
+      }
    ],
    bootstrap: [
       AppComponent
