@@ -6,7 +6,8 @@ import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 
 
-Cesium.buildModuleUrl.setBaseUrl('/assets/cesium/');
+Cesium.buildModuleUrl.setBaseUrl('/CesiumAngular/assets/cesium/');
+
 platformBrowserDynamic().bootstrapModule(AppModule);
 
 if (environment.production) {
