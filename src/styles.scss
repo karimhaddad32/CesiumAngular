@@ -14,9 +14,7 @@ html, body, .map-container {
     background: rgba(95, 94, 94, 0.5);
     width: 25%;
     transition: 1s;
-    height: auto;
-    max-height: 600px;
-    height: 600px;
+    height: 100%;
     overflow: auto;
     color: white;
     word-wrap: break-word;

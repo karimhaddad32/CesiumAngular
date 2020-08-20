@@ -53,6 +53,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatTreeModule} from '@angular/material/tree';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import {AngularCesiumModule} from 'angular-cesium';
+import { ExtentService } from './services/extent.service';
 
 
 
@@ -82,7 +83,8 @@ import {AngularCesiumModule} from 'angular-cesium';
       AngularCesiumModule.forRoot()
    ],
    providers: [
-      MainPageComponent
+      MainPageComponent,
+      ExtentService
    ],
    bootstrap: [
       AppComponent

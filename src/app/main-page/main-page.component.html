@@ -1,4 +1,4 @@
-<ac-layer acFor="let html of htmls$" [context]="this">
+<ac-layer  acFor="let html of htmls$" [context]="this">
     <ac-html-desc props="{position: html.position, show: html.show}">
       <ng-template let-html>
         <div class="contianer">
@@ -8,8 +8,8 @@
     </ac-html-desc>
 </ac-layer>
 
-<div class="content-menu" id="content-menu" #contentMenu>
+<div class="content-menu" id="content-menu" style="height: 100%;" #contentMenu>
     <ul>
       <li *ngFor="let cdb of extents" routerLink='/{{cdb.name}}' (click)="removeButtons(cdb.name)" class="list-item">{{cdb.name}}</li>
     </ul>
-</div>
+</div> 

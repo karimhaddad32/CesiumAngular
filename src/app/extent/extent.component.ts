@@ -66,13 +66,14 @@ export class ChecklistDatabase {
     this.route.params.subscribe(params => {
 
       this.extentService.getCDBDatasets(params.name).subscribe(extent => {
-
         if (extent === null) {
               this.router.navigateByUrl('404');
               return;
-            }
+        }
 
-        this.extentData = extent;
+
+        this.extentService.selectedExtent = extent;
+        this.extentData = this.extentService.buildDatasetsObject(extent);
 
         const data = this.buildFileTree({Extents: this.extentData});
 
@@ -97,12 +98,10 @@ export class ChecklistDatabase {
     };
  }
 
-  /**
-   * Build the file structure tree.
-   * The return value is the list of `TodoItemNode`.
-   */
 
   buildFileTree(exntetsData: any): TodoItemNode[] {
+
+    const checkList : TodoItemNode[] = [];
 
     const rasterDatasets = ['001_Elevation', '004_Imagery', '005_RMTexture', '900_ExtImagery', '002_MinMaxElevation'];
 
@@ -114,7 +113,7 @@ export class ChecklistDatabase {
 
     Object.keys(this.extentData).forEach( dataset => {
 
-      const level1Node = new TodoItemNode(); 
+      const level1Node = new TodoItemNode();
 
       const datasetDetails = this.extentData[dataset];
 
@@ -127,6 +126,8 @@ export class ChecklistDatabase {
       }else{
         level1Node.features_count = datasetDetails.total_features_count;
       }
+
+  
 
       Object.keys(datasetDetails).forEach(subDataset =>{
         if (subDataset !== 'total_features_count'){
@@ -168,6 +169,7 @@ export class ChecklistDatabase {
       });
       rootNode.children.push(level1Node);
     });
+
 
      return [rootNode];
  }
@@ -251,60 +253,91 @@ export class ExtentComponent implements OnInit {
       _database.dataChange.subscribe(data => {
         this.dataSource.data = data;
       });
+
+      this.polygons$ = observableFrom([]).pipe(merge(this.updater));
     }
 
 
 
   ngOnInit(): void {
     this.currentFeatures = [];
+    this.currentExtent = new Extent();
 
-    this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
+   
 
-    if(this.currentExtent === undefined){
-      this.router.navigateByUrl('404');
-      return;
-    }
 
-    this.service.getCDBDatasets(this.currentExtent.name).subscribe(datasets => this.cdbDatasets = datasets);
+    this.route.params.subscribe(params => {
 
-    this.camera.cameraFlyTo({
-      destination : Cesium.Cartesian3.fromDegrees(
-        (this.currentExtent.baseExtents.x1 + this.currentExtent.baseExtents.x2)/2,
-        (this.currentExtent.baseExtents.y1 +this.currentExtent.baseExtents.y2)/2,
-        500000.0)
-    })
+      this.service.getCDBDatasets(params.name).subscribe(extent => {
 
-    this.createCesiumCDBBorders();
+        if (extent === null) {
+              this.router.navigateByUrl('404');
+              return;
+        }
 
-    this.titleService.setTitle(`${this.currentExtent.name} - ${this.sharedService.cdbTitle}`);
+        this.currentExtent.features = extent.features;
+        // this.extentData = this.service.buildDatasetsObject(extent);
 
-    this.meta.addTags([
-      {
-        name: 'description',
-        content: this.currentExtent.name + ' CDB in Cesium'
-      },
-      {
-        property: 'og:title',
-        content: `${this.currentExtent.name} - ${this.sharedService.cdbTitle}`
-      },
-      {
-        property: 'og:type',
-        content: 'Web-site'
-      },
-      {
-        property: 'og:url',
-        content: this.sharedService.baseUrl + this.currentExtent.name
-      },
-      {
-        property: 'og:description',
-        content: this.currentExtent.name + ' CDB in Cesium'
-      },
-      {
-        property: 'og:site_name',
-        content: this.sharedService.cdbTitle
-      }
-    ]);
-  
+
+
+        // this.service.getSelectedExtent().subscribe(extent => this.currentExtent = extent);
+
+        if(this.currentExtent === undefined){
+          this.router.navigateByUrl('404');
+          return;
+        }
+
+        // this.service.getCDBDatasets(this.currentExtent.name).subscribe(datasets => this.cdbDatasets = datasets);
+
+        const extentOne = this.service.extentArray.filter(x => x.name === params.name)[0];
+        this.currentExtent.name = extentOne.name;
+        this.currentExtent.baseExtents = extentOne.baseExtents;
+
+        this.createCesiumCDBBorders();
+
+        this.camera.cameraFlyTo({
+          destination : Cesium.Cartesian3.fromDegrees(
+            (extentOne.baseExtents.x1 + extentOne.baseExtents.x2)/2,
+            (extentOne.baseExtents.y1 + extentOne.baseExtents.y2)/2,
+            500000.0)
+        })
+
+
+        this.titleService.setTitle(`${extentOne.name} - ${this.sharedService.cdbTitle}`);
+
+        this.meta.addTags([
+          {
+            name: 'description',
+            content: extentOne.name + ' CDB in Cesium'
+          },
+          {
+            property: 'og:title',
+            content: `${extentOne.name} - ${this.sharedService.cdbTitle}`
+          },
+          {
+            property: 'og:type',
+            content: 'Web-site'
+          },
+          {
+            property: 'og:url',
+            content: this.sharedService.baseUrl + extentOne.name
+          },
+          {
+            property: 'og:description',
+            content: extentOne.name + ' CDB in Cesium'
+          },
+          {
+            property: 'og:site_name',
+            content: this.sharedService.cdbTitle
+          }
+        ]);
+
+      });
+
+    });
+
+
+
   }
 
   isRasterSubDataset(node: TodoItemFlatNode){
@@ -336,13 +369,21 @@ export class ExtentComponent implements OnInit {
       outlineWidth: 1,
     });
 
-    this.polygons$ = observableFrom([
-      {
-        id: this.entiyCounter.toString(),
-        entity: baseExtent,
-        actionType: ActionType.ADD_UPDATE
-      }
-    ]).pipe(merge(this.updater));
+    setTimeout(() => {
+      baseExtent.show = true;
+      this.updater.next({
+        id: 'x',
+        actionType: ActionType.ADD_UPDATE,
+        entity:baseExtent
+      });
+    });
+    // this.polygons$ = observableFrom([
+    //   {
+    //     id: this.entiyCounter.toString(),
+    //     entity: baseExtent,
+    //     actionType: ActionType.ADD_UPDATE
+    //   }
+    // ]).pipe(merge(this.updater));
   }
 
     getLevel = (node: TodoItemFlatNode) => node.level;

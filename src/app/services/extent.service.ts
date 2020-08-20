@@ -1,10 +1,12 @@
 import { Extent, Feature } from './../classes/extent';
 import { Dataset, CDBComponent } from './../classes/dataset';
 import { HttpClient } from '@angular/common/http';
-import { EXTENTS } from './../mock-extents';
 import { Observable, of } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { TodoItemFlatNode } from '../extent/extent.component';
+import { map } from 'rxjs/operators';
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -12,82 +14,68 @@ import { TodoItemFlatNode } from '../extent/extent.component';
 
 export class ExtentService {
 
-private extents: Extent[];
+private _extents: Extent[];
 private _selectedExtent: Extent;
   oldFeaturesList: Feature[];
 public rasterDatasets = ['001_Elevation', '004_Imagery', '005_RMTexture', '900_ExtImagery', '002_MinMaxElevation'];
 
+public  cdbs = [
+  {
+    id: 1,
+    name: 'Tijuana',
+    coordinate: {x: -117.0382, y: 32.5149},
+    features: [],
+    type: ' ',
+    baseExtents: {x1: -116, x2: -119, y1: 31, y2: 33}
+  },
+  {
+    id: 2,
+    name: 'Yemen',
+    coordinate: {x: 44.4216433, y: 15.0565379},
+    features: [],
+    type: ' ',
+    baseExtents: {x1: 44, x2: 46, y1: 12, y2: 14}
+  },
+ {
+   id: 9,
+   name: 'Montreal',
+   coordinate: {x: -73.6050949, y: 45.5023085},
+   features: [],
+   type: ' ',
+   baseExtents: {x1: -74, x2: -73, y1: 45, y2: 46}
+  }
+]
+
+
 constructor(private http: HttpClient) {
 
   this._selectedExtent = new Extent();
-  this._selectedExtent = null;
-  this.extents = [
-    {
-      id: 1,
-      name: 'Tijuana',
-      coordinate: {x: -117.0382, y: 32.5149},
-      features: [],
-      type: ' ',
-      baseExtents: {x1: -116, x2: -119, y1: 31, y2: 33}
-    },
-    {
-      id: 2,
-      name: 'Yemen',
-      coordinate: {x: 44.4216433, y: 15.0565379},
-      features: [],
-      type: ' ',
-      baseExtents:{x1: 44, x2 : 46, y1: 12, y2: 14}
-  },
-    {
-      id: 3,
-      name: 'Pendleton',
-      coordinate: {x: -117.5 , y: 33.523},
-      features: [],
-      type: ' ',
-      baseExtents: undefined
-    }
-    ,
-    {
-      id: 4,
-      name: 'Charlottetown',
-      coordinate: {x: -56.12619, y: 52.76273},
-      features: [],
-      type: ' ',
-      baseExtents: undefined
-    }
-];
+  this._extents = [];
 }
 
 // Rest API calls will be here
-serverUrl = '';
+serverUrl = '127.0.0.1:9000/';
 // Returns only availabe CDBs and their info
   getExtents(): Observable<Extent[]> {
-    // Temporary
-    // const extents: Extent[] = EXTENTS;
-    return of(this.extents);
+    // return this.http.get<any>('http://127.0.0.1:9000');
 
-    // Rest API call from the web server.
-    return this.http.get<Extent[]>(this.serverUrl);
+    return of(this.cdbs);
+
   }
 
-  // cdb Name
-  getCDBDatasets(name: string): Observable<any>{
-
-    const extents = this.extents.filter(a => a.name === name);
-    if (extents.length === 0){
-      this.selectedExtent = undefined;
-      return undefined;
-    }
-
+  buildDatasetsObject(extent: Extent) : any {
     const datasetsObject = {};
 
+  
 
-    this.selectedExtent = this.extents.filter(a => a.name === name)[0];
-    this.selectedExtent.features = EXTENTS.filter(x => x.name === name)[0].features;
+    this.selectedExtent = extent;
 
-    this.selectedExtent.features.forEach(dataset => {
+    extent.features.forEach(dataset => {
       const properties = dataset.properties;
 
+      if(!properties.data_set.includes('Descriptor')){
+
+      
       if(!(properties.data_set in datasetsObject)){
         datasetsObject[properties.data_set] = {
           total_features_count: properties.features_count
@@ -118,12 +106,27 @@ serverUrl = '';
         }
         datasetsObject[properties.data_set][properties.component].features_count += properties.features_count;
       }
+    }
     });
-    return of(datasetsObject);
+    return datasetsObject;
+  }
+
+  getCDBDatasets(name: string): Observable<any> {
+
+    if (this.extentArray.length === 0) {
+      this.getExtents().subscribe(result => this.extentArray = result);
+    }
+   
+
+    // return this.http.get<any[]>('http://127.0.0.1:9000/cdbs/' + name);
+
+    return this.http.get('assets/' + name + '.geojson');
+
   }
 
   getFeatures(checkedItems: TodoItemFlatNode[]): Observable<Feature[]>
   {
+
     const featuresList: Feature[] = [];
     checkedItems.forEach(item => {
       if(item.level === 3){
@@ -155,5 +158,11 @@ serverUrl = '';
     this._selectedExtent = extent;
   }
 
+  get extentArray(): Extent[] {
+    return this._extents;
+  }
 
+  set extentArray(extent: Extent[]) {
+    this._extents = extent;
+  }
 }

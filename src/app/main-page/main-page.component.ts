@@ -9,6 +9,7 @@ import { AcLayerComponent, MapsManagerService } from 'angular-cesium';
 import { from, from as observableFrom, Observable, Subject,of } from 'rxjs';
 import { AfterViewInit } from '@angular/core';
 import {  AcNotification, ActionType, CameraService, ViewerConfiguration } from 'angular-cesium';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-main-page',
@@ -19,9 +20,9 @@ export class MainPageComponent implements OnInit {
 
   @ViewChild(AcLayerComponent) layer: AcLayerComponent;
 
-  htmls$: Observable<AcNotification>;
+  htmls$: Observable<AcNotification> = new Observable<AcNotification>();
 
-  htmlArray: any[];
+  htmlArray: any[] = [];
   extents: Extent[];
   datasets: any;
   viewer: any;
@@ -33,11 +34,16 @@ export class MainPageComponent implements OnInit {
     private titleService: Title,
     private sharedService: SharedService,
     private camera: CameraService,
-    private mapsManagerService: MapsManagerService
+    private mapsManagerService: MapsManagerService,
+    private http: HttpClient
     ) {
-      this.getExtents();
-      this.setLocationsOnMap();
-      this.cesiumViewer = mapsManagerService.getMap().getCesiumViewer();
+      
+      this.extentService.getExtents().subscribe(extents => {
+        this.extents = extents;
+        this.extentService.extentArray = extents;
+        this.setLocationsOnMap();
+        this.cesiumViewer = mapsManagerService.getMap().getCesiumViewer();
+      });
     }
 
   title = 'Home';
@@ -46,17 +52,11 @@ export class MainPageComponent implements OnInit {
     this.titleService.setTitle(`${this.title} - ${this.sharedService.cdbTitle}`);
   }
 
-  // Calls the service and initialize the extents with the response from the service.
-  getExtents(): void {
-    this.extentService
-    .getExtents()
-    .subscribe(extents => (this.extents = extents));
-  }
-
   createHtmls(): any[] {
-    this.htmlArray  = [];
+    this.htmlArray = [];
     let counter = 0;
     this.extents.forEach(location => {
+    
       this.htmlArray.push({
         id: counter,
         actionType: ActionType.ADD_UPDATE,
@@ -66,7 +66,7 @@ export class MainPageComponent implements OnInit {
           name: location.name,
           position: Cesium.Cartesian3.fromDegrees(
             location.coordinate.x,
-             location.coordinate.y),
+            location.coordinate.y),
           color: Cesium.Color.RED
         }});
         counter++;
@@ -79,6 +79,10 @@ export class MainPageComponent implements OnInit {
   setLocationsOnMap(){
     this.htmlArray = this.createHtmls();
     this.htmls$ = from(this.htmlArray);
+    this.htmls$.forEach(element => {
+    
+      this.layer.updateNotification(element);
+    });
   }
 
   removeButtons(cdbName: string) {

@@ -20,6 +20,7 @@ export class MapComponent  {
   constructor(viewerConf: ViewerConfiguration) {
 
     // viewerOptions will be passed the Cesium.Viewer contstuctor 
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwNzJmOWIyYi1hYWZhLTQyNjEtYjk1OS0wOGRjNzIxODY4NTgiLCJpZCI6MzI1MDIsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1OTcwODYwMTR9.PWgnXks37YjsSP52wqFn3-FDy-ExJ1Wd6bCyDbHGrOk';
     viewerConf.viewerOptions = {
       sceneMode: SceneMode.SCENE2D,
       selectionIndicator: false,
@@ -33,9 +34,11 @@ export class MapComponent  {
       geocoder: false,
       navigationHelpButton: false,
       navigationInstructionsInitiallyVisible: false,
+    
     };
 
     // Will be called on viewer initialistion   
+    
     viewerConf.viewerModifier = (viewer: any) => {
       // Remove default double click zoom behaviour
       viewer.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);

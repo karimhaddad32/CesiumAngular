@@ -7,6 +7,7 @@ import { SharedService } from './services/shared.service';
 
 declare var Cesium: any;
 
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -18,7 +19,7 @@ export class AppComponent implements OnInit {
   protected cdbsUrl = '';
   protected extentsUrl = 'assets/cdbs/';
   protected viewer;
-
+  
   public cesiumViewer;
   public extents: Extent[];
   public selectedExtent: Extent;
@@ -33,6 +34,7 @@ export class AppComponent implements OnInit {
       this.selectedExtent = new Extent();
       this.currentDatasets = [];
       this.isOpenNav = true;
+  
   }
 
   ngOnInit(): void {
