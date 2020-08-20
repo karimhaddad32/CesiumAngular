@@ -22,7 +22,7 @@ export class MapComponent  {
     // viewerOptions will be passed the Cesium.Viewer contstuctor 
     Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwNzJmOWIyYi1hYWZhLTQyNjEtYjk1OS0wOGRjNzIxODY4NTgiLCJpZCI6MzI1MDIsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1OTcwODYwMTR9.PWgnXks37YjsSP52wqFn3-FDy-ExJ1Wd6bCyDbHGrOk';
     viewerConf.viewerOptions = {
-      sceneMode: SceneMode.SCENE2D,
+      sceneMode: SceneMode.SCENE3D,
       selectionIndicator: false,
       timeline: false,
       infoBox: false,
