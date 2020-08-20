@@ -15,7 +15,7 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "prefix": "CesiumAngular",
+          "baseHref": "/CesiumAngular/",
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist",
