@@ -26,20 +26,14 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              {
-                "glob": "**/*",
-                "input": "./node_modules/cesium/Build/Cesium",
-                "output": "./assets/cesium"
-              }
+              {"glob": "**/*", "input": "./node_modules/cesium/Build/Cesium", "output": "./assets/cesium" }
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss",
               "./node_modules/cesium/Build/Cesium/Widgets/widgets.css"
             ],
-            "scripts": [
-              "./node_modules/cesium/Build/Cesium/Cesium.js"
-            ]
+            "scripts": ["./node_modules/cesium/Build/Cesium/Cesium.js"]
           },
           "configurations": {
             "production": {
@@ -105,9 +99,7 @@
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss"
             ],
-            "scripts": [
-              "./node_modules/cesium/Build/Cesium/Cesium.js"
-            ]
+            "scripts": ["./node_modules/cesium/Build/Cesium/Cesium.js"]
           }
         },
         "lint": {
@@ -134,10 +126,6 @@
               "devServerTarget": "cesiumangular:serve:production"
             }
           }
-        },
-        "deploy": {
-          "builder": "angular-cli-ghpages:deploy",
-          "options": {}
         }
       }
     }
